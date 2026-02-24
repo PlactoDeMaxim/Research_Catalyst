@@ -1,15 +1,23 @@
 {
-  "name": "airpap",
+  "name": "research-catalyst",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "@xyflow/react": "^12.10.1",
+    "katex": "^0.16.32",
+    "mermaid": "^11.12.3",
     "next": "16.1.6",
+    "prisma": "^5.22.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },

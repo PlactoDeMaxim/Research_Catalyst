@@ -1,0 +1,577 @@
+/* ═══════════════════════════════════════════════════════
+   LaTeX Preview — Template-Specific Paper Styles
+   Each template renders with distinct, authentic formatting
+   ═══════════════════════════════════════════════════════ */
+
+.preview {
+    height: 100%;
+    overflow-y: auto;
+    background: #e8e8e8;
+    padding: 24px;
+}
+
+/* ═══════════════
+   Base Paper
+   ═══════════════ */
+.paper {
+    max-width: 8.5in;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 11in;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+    color: #000;
+}
+
+/* =====================================
+   SHARED ELEMENTS
+   ===================================== */
+
+.content :global(.doc-title) {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.content :global(.doc-author-line) {
+    text-align: center;
+    margin: 0;
+    color: #000;
+}
+
+.content :global(.doc-date) {
+    text-align: center;
+    color: #444;
+}
+
+.content :global(.doc-authors) {
+    display: flex;
+    justify-content: center;
+    gap: 2em;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.content :global(.author-block) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.content :global(.author-name) {
+    font-weight: 400;
+}
+
+.content :global(.author-affil) {
+    font-size: 0.85em;
+    font-style: italic;
+    color: #444;
+}
+
+.content :global(.cite-ref) {
+    color: #000;
+    font-size: 0.92em;
+}
+
+.content :global(.figure-block) {
+    margin: 1.2em 0;
+    text-align: center;
+}
+
+.content :global(.figure-placeholder) {
+    width: 80%;
+    margin: 0 auto;
+    height: 120px;
+    background: linear-gradient(135deg, #f0f0f0, #e4e4e4);
+    border: 1px solid #ddd;
+}
+
+.content :global(.figure-caption) {
+    font-size: 0.85em;
+    margin-top: 0.4em;
+    text-indent: 0 !important;
+    text-align: center !important;
+    color: #000;
+}
+
+.content :global(.table-block) {
+    margin: 1em 0;
+    text-align: center;
+}
+
+.content :global(.table-placeholder) {
+    padding: 1.5em;
+    background: #f8f8f8;
+    border-top: 2px solid #000;
+    border-bottom: 2px solid #000;
+    font-size: 0.8em;
+    color: #999;
+    letter-spacing: 0.15em;
+}
+
+.content :global(.table-caption) {
+    font-size: 0.8em;
+    margin-top: 0.3em;
+    text-indent: 0 !important;
+    text-align: center !important;
+}
+
+.content :global(.math-error) {
+    color: #c00;
+    font-family: monospace;
+    font-size: 0.85em;
+}
+
+.content :global(.katex-display) {
+    margin: 0.8em 0;
+}
+
+.content p {
+    margin: 0 0 0.5em 0;
+}
+
+.content ul,
+.content ol {
+    margin: 0.5em 0 0.5em 1.5em;
+}
+
+.content li {
+    margin: 0.15em 0;
+}
+
+.content strong {
+    font-weight: 700;
+}
+
+.content code {
+    font-family: 'Courier New', 'Courier', monospace;
+    font-size: 0.9em;
+}
+
+/* ════════════════════════════════════════
+   IEEE Conference Style
+   Two-column, Times New Roman, Roman numerals
+   ════════════════════════════════════════ */
+.ieee {
+    font-family: 'Times New Roman', 'Times', 'Nimbus Roman', serif;
+    font-size: 10pt;
+    line-height: 1.25;
+    padding: 0.75in 0.65in;
+}
+
+.ieee .content :global(.doc-title) {
+    font-size: 24pt;
+    font-weight: 400;
+    margin-bottom: 0.6em;
+    line-height: 1.15;
+}
+
+.ieee .content :global(.doc-authors) {
+    margin-bottom: 1.2em;
+}
+
+.ieee .content :global(.author-name) {
+    font-size: 11pt;
+}
+
+.ieee .content :global(.author-affil) {
+    font-size: 9pt;
+    font-style: italic;
+}
+
+.ieee .content :global(.abstract-block) {
+    margin: 0 0 1em 0;
+    padding: 0;
+    border: none;
+}
+
+.ieee .content :global(.abstract-label) {
+    display: inline;
+    font-size: 9pt;
+    font-weight: 700;
+    margin: 0;
+}
+
+.ieee .content :global(.abstract-text) {
+    font-size: 9pt;
+    line-height: 1.3;
+    text-align: justify;
+    margin: 0;
+}
+
+/* IEEE sections: centered, uppercase, Roman */
+.ieee .content :global(.doc-section) {
+    text-align: center;
+    font-size: 10pt;
+    font-weight: 400;
+    text-transform: uppercase;
+    font-variant: small-caps;
+    margin: 1.2em 0 0.5em 0;
+    letter-spacing: 0.02em;
+}
+
+.ieee .content :global(.sec-num) {
+    margin-right: 0.3em;
+}
+
+.ieee .content :global(.doc-subsection) {
+    font-size: 10pt;
+    font-weight: 400;
+    font-style: italic;
+    margin: 0.8em 0 0.3em 0;
+}
+
+/* IEEE two-column body after abstract */
+.ieee .content :global(.abstract-block)~p,
+.ieee .content :global(.abstract-block)~h2,
+.ieee .content :global(.abstract-block)~h3,
+.ieee .content :global(.abstract-block)~ul,
+.ieee .content :global(.abstract-block)~ol,
+.ieee .content :global(.abstract-block)~div {
+    /* Can't do true two-column with CSS in the same flow perfectly,
+     but we add column layout to the content area when IEEE is selected */
+}
+
+.ieee .content {
+    column-count: 2;
+    column-gap: 0.25in;
+    column-rule: none;
+}
+
+/* Prevent title/authors/abstract from splitting across columns */
+.ieee .content :global(.doc-title),
+.ieee .content :global(.doc-authors),
+.ieee .content :global(.doc-author-line),
+.ieee .content :global(.doc-date),
+.ieee .content :global(.abstract-block) {
+    column-span: all;
+}
+
+.ieee .content p {
+    text-align: justify;
+    text-indent: 1em;
+    margin: 0 0 0.15em 0;
+    font-size: 10pt;
+}
+
+.ieee .content :global(.figure-block),
+.ieee .content :global(.table-block) {
+    break-inside: avoid;
+}
+
+.ieee .content :global(.figure-placeholder) {
+    height: 90px;
+}
+
+.ieee .content :global(.figure-caption),
+.ieee .content :global(.table-caption) {
+    font-size: 8pt;
+}
+
+
+/* ════════════════════════════════════════
+   ACM SIGCHI Style
+   Single column (for CHI), Libertine, bold section #s
+   ════════════════════════════════════════ */
+.acm {
+    font-family: 'Linux Libertine', 'Libertinus Serif', 'Times New Roman', serif;
+    font-size: 10pt;
+    line-height: 1.35;
+    padding: 0.75in 0.75in;
+}
+
+.acm .content :global(.doc-title) {
+    font-size: 18pt;
+    font-weight: 700;
+    margin-bottom: 0.3em;
+    line-height: 1.15;
+}
+
+.acm .content :global(.doc-authors) {
+    margin-bottom: 0.5em;
+}
+
+.acm .content :global(.author-name) {
+    font-size: 10pt;
+    font-weight: 700;
+}
+
+.acm .content :global(.author-affil) {
+    font-size: 8.5pt;
+    font-style: normal;
+    color: #333;
+}
+
+.acm .content :global(.acm-abstract) {
+    border-left: none;
+    padding: 0;
+    margin: 1em 0;
+}
+
+.acm .content :global(.acm-abstract) h3 {
+    text-align: left;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3em;
+}
+
+.acm .content :global(.abstract-block) {
+    margin: 1em 0;
+}
+
+.acm .content :global(.abstract-text) {
+    font-size: 9pt;
+    text-align: justify;
+    line-height: 1.35;
+}
+
+/* ACM sections: bold, numbered, uppercase */
+.acm .content :global(.doc-section) {
+    font-size: 12pt;
+    font-weight: 700;
+    margin: 1.5em 0 0.5em 0;
+    text-align: left;
+}
+
+.acm .content :global(.sec-num) {
+    margin-right: 0.5em;
+}
+
+.acm .content :global(.doc-subsection) {
+    font-size: 10.5pt;
+    font-weight: 700;
+    margin: 1em 0 0.3em 0;
+    font-style: normal;
+}
+
+.acm .content p {
+    text-align: justify;
+    margin: 0 0 0.4em 0;
+    text-indent: 1em;
+}
+
+
+/* ════════════════════════════════════════
+   Thesis / Report Style
+   Single column, 12pt, wider margins, chapter headings
+   ════════════════════════════════════════ */
+.thesis {
+    font-family: 'Times New Roman', 'Times', 'Nimbus Roman', serif;
+    font-size: 12pt;
+    line-height: 1.65;
+    padding: 1in 1.25in;
+}
+
+.thesis .content :global(.doc-title) {
+    font-size: 22pt;
+    font-weight: 700;
+    margin: 1in 0 0.4em 0;
+    line-height: 1.2;
+}
+
+.thesis .content :global(.doc-author-line) {
+    font-size: 14pt;
+    margin-bottom: 0.3em;
+}
+
+.thesis .content :global(.doc-date) {
+    font-size: 12pt;
+    margin-bottom: 2em;
+}
+
+.thesis .content :global(.abstract-block) {
+    margin: 0 1.5em 2em 1.5em;
+}
+
+.thesis .content :global(.abstract-block) h3 {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.6em;
+}
+
+.thesis .content :global(.abstract-text) {
+    font-size: 12pt;
+    line-height: 1.65;
+    text-align: justify;
+}
+
+/* Thesis sections: "Chapter N" on its own line, then title */
+.thesis .content :global(.doc-section) {
+    font-size: 18pt;
+    font-weight: 700;
+    margin: 2em 0 1em 0;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.4em;
+}
+
+.thesis .content :global(.sec-num) {
+    display: block;
+    font-size: 11pt;
+    color: #555;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.2em;
+}
+
+.thesis .content :global(.doc-subsection) {
+    font-size: 14pt;
+    font-weight: 700;
+    margin: 1.2em 0 0.5em 0;
+    font-style: normal;
+}
+
+.thesis .content p {
+    text-align: justify;
+    text-indent: 2em;
+    margin: 0 0 0.3em 0;
+}
+
+.thesis .content :global(.doc-section)+p,
+.thesis .content :global(.doc-subsection)+p {
+    text-indent: 0;
+}
+
+
+/* ════════════════════════════════════════
+   arXiv Preprint Style
+   Single column, Computer Modern, clean
+   ════════════════════════════════════════ */
+.arxiv {
+    font-family: 'Computer Modern', 'Latin Modern', 'CMU Serif', Georgia, serif;
+    font-size: 11pt;
+    line-height: 1.45;
+    padding: 0.85in 1in;
+}
+
+.arxiv .content :global(.doc-title) {
+    font-size: 17pt;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+    line-height: 1.2;
+}
+
+.arxiv .content :global(.doc-author-line) {
+    font-size: 12pt;
+    margin-bottom: 0.3em;
+}
+
+.arxiv .content :global(.doc-date) {
+    font-size: 11pt;
+    margin-bottom: 1.5em;
+}
+
+.arxiv .content :global(.abstract-block) {
+    margin: 0 2em 1.5em 2em;
+}
+
+.arxiv .content :global(.abstract-block) h3 {
+    text-align: center;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-bottom: 0.4em;
+}
+
+.arxiv .content :global(.abstract-text) {
+    font-size: 10pt;
+    line-height: 1.4;
+    text-align: justify;
+}
+
+.arxiv .content :global(.doc-section) {
+    font-size: 13pt;
+    font-weight: 700;
+    margin: 1.5em 0 0.6em 0;
+}
+
+.arxiv .content :global(.sec-num) {
+    margin-right: 0.4em;
+}
+
+.arxiv .content :global(.doc-subsection) {
+    font-size: 11pt;
+    font-weight: 700;
+    margin: 1em 0 0.4em 0;
+    font-style: normal;
+}
+
+.arxiv .content p {
+    text-align: justify;
+    text-indent: 1.5em;
+    margin: 0 0 0.35em 0;
+}
+
+.arxiv .content :global(.doc-section)+p,
+.arxiv .content :global(.doc-subsection)+p {
+    text-indent: 0;
+}
+
+
+/* ════════════════════════════════════════
+   Blank Paper Style
+   Simple article defaults
+   ════════════════════════════════════════ */
+.blank {
+    font-family: 'Computer Modern', Georgia, serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    padding: 1in 1in;
+}
+
+.blank .content :global(.doc-title) {
+    font-size: 17pt;
+    font-weight: 700;
+    margin-bottom: 0.3em;
+}
+
+.blank .content :global(.doc-author-line) {
+    font-size: 12pt;
+    margin-bottom: 0.2em;
+}
+
+.blank .content :global(.doc-date) {
+    font-size: 11pt;
+    margin-bottom: 2em;
+}
+
+.blank .content :global(.abstract-block) {
+    margin: 0 2em 1.5em 2em;
+}
+
+.blank .content :global(.abstract-block) h3 {
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 0.4em;
+}
+
+.blank .content :global(.abstract-text) {
+    font-size: 11pt;
+    text-align: justify;
+}
+
+.blank .content :global(.doc-section) {
+    font-size: 14pt;
+    font-weight: 700;
+    margin: 1.5em 0 0.6em 0;
+}
+
+.blank .content :global(.sec-num) {
+    margin-right: 0.4em;
+}
+
+.blank .content :global(.doc-subsection) {
+    font-size: 12pt;
+    font-weight: 700;
+    margin: 1em 0 0.4em 0;
+    font-style: normal;
+}
+
+.blank .content p {
+    text-align: justify;
+    text-indent: 1.5em;
+    margin: 0 0 0.4em 0;
+}

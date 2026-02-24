@@ -1,0 +1,264 @@
+/* ═══════════ Visualization Studio ═══════════ */
+
+/* ── Tabs ── */
+.tabs {
+    display: flex;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+    padding: 0.5rem 0.85rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.87rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+    margin-bottom: -1px;
+    font-weight: 500;
+}
+
+.tab:hover {
+    color: var(--text-primary);
+}
+
+.tabActive {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+/* ── Error Banner ── */
+.errorBanner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    color: #b91c1c;
+    font-size: 0.85rem;
+    margin-bottom: var(--space-lg);
+}
+
+.errorClose {
+    background: none;
+    border: none;
+    color: #b91c1c;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 4px;
+}
+
+/* ── Studio 3-Panel Layout ── */
+.studioLayout {
+    display: grid;
+    grid-template-columns: 260px 1fr 320px;
+    gap: var(--space-md);
+    min-height: 520px;
+}
+
+@media (max-width: 1200px) {
+    .studioLayout {
+        grid-template-columns: 240px 1fr;
+    }
+
+    .editorPanel {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .studioLayout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Panels ── */
+.controlPanel,
+.viewerPanel,
+.editorPanel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.controlPanel {
+    gap: var(--space-xs);
+}
+
+.panelTitle {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.fieldLabel {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-top: var(--space-sm);
+    margin-bottom: 2px;
+}
+
+.defTextarea {
+    font-size: 0.82rem;
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* ── Export ── */
+.exportControls {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-color);
+}
+
+.exportButtons {
+    display: flex;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+}
+
+.exportButtons .btn {
+    flex: 1;
+    justify-content: center;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.5rem;
+}
+
+/* ── Viewer Panel ── */
+.viewerArea {
+    flex: 1;
+    position: relative;
+    min-height: 350px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+}
+
+.svgContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-md);
+}
+
+.svgContainer svg {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+}
+
+.mermaidContainer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-md);
+}
+
+.mermaidContainer svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.viewerPlaceholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-muted);
+    gap: var(--space-xs);
+    padding: var(--space-2xl);
+}
+
+.placeholderIcon {
+    font-size: 2.5rem;
+    opacity: 0.25;
+}
+
+.viewerPlaceholder p {
+    font-size: 0.85rem;
+}
+
+.placeholderHint {
+    font-size: 0.72rem;
+    opacity: 0.5;
+}
+
+/* ── Definition Readout ── */
+.defReadout {
+    margin-top: var(--space-md);
+}
+
+.defCode {
+    background: var(--bg-muted);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    max-height: 140px;
+    overflow-y: auto;
+    white-space: pre;
+    color: var(--text-secondary);
+}
+
+/* ── Editor Panel ── */
+.editorArea {
+    flex: 1;
+    min-height: 350px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #fafbfc;
+}
+
+/* ── Loading Overlay ── */
+.loadingOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(248, 249, 251, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    z-index: 10;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -1,66 +1,101 @@
-import Image from "next/image";
 import styles from "./page.module.css";
+import Link from "next/link";
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+const mockProjects = [
+    {
+        id: "1",
+        title: "Deep Learning for Medical Image Segmentation",
+        description:
+            "Exploring U-Net architectures for automated tumor detection in MRI scans",
+        status: "WRITING",
+        updatedAt: "2 hours ago",
+    },
+    {
+        id: "2",
+        title: "Transformer-Based Sentiment Analysis",
+        description:
+            "Fine-tuning BERT models for multilingual opinion mining across social media",
+        status: "LITERATURE_REVIEW",
+        updatedAt: "1 day ago",
+    },
+    {
+        id: "3",
+        title: "Federated Learning Privacy Framework",
+        description:
+            "Designing differential privacy mechanisms for distributed model training",
+        status: "PLANNING",
+        updatedAt: "3 days ago",
+    },
+];
+
+const statusLabels: Record<string, { label: string; className: string }> = {
+    PLANNING: { label: "Planning", className: "badge-planning" },
+    LITERATURE_REVIEW: { label: "Literature Review", className: "badge-literature" },
+    WRITING: { label: "Writing", className: "badge-writing" },
+    REVIEW: { label: "Review", className: "badge-review" },
+    COMPLETE: { label: "Complete", className: "badge-complete" },
+};
+
+export default function Dashboard() {
+    return (
+        <div>
+            {/* Page Header */}
+            <div className={styles.header}>
+                <div>
+                    <h1>Projects</h1>
+                    <p className={styles.subtitle}>
+                        Manage your research projects and track progress.
+                    </p>
+                </div>
+                <button className="btn btn-primary">+ New Project</button>
+            </div>
+
+            {/* Quick Access */}
+            <div className={`grid grid-4 ${styles.quickRow}`}>
+                {[
+                    { icon: "🔍", label: "Paper Discovery", href: "/discovery" },
+                    { icon: "📝", label: "Paper Editor", href: "/editor" },
+                    { icon: "📈", label: "Visualization", href: "/visualize" },
+                    { icon: "📅", label: "Research Planner", href: "/planner" },
+                ].map((item) => (
+                    <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`${styles.quickCard}`}
+                    >
+                        <span className={styles.quickIcon}>{item.icon}</span>
+                        <span className={styles.quickLabel}>{item.label}</span>
+                        <span className={styles.quickArrow}>→</span>
+                    </Link>
+                ))}
+            </div>
+
+            {/* Projects List */}
+            <div className={styles.section}>
+                <h2 className="section-label">Recent Projects</h2>
+                <div className={styles.projectList}>
+                    {mockProjects.map((project) => (
+                        <Link
+                            key={project.id}
+                            href="/editor"
+                            className={`${styles.projectRow} animate-in`}
+                        >
+                            <div className={styles.projectInfo}>
+                                <h3 className={styles.projectTitle}>{project.title}</h3>
+                                <p className={styles.projectDesc}>{project.description}</p>
+                            </div>
+                            <div className={styles.projectMeta}>
+                                <span
+                                    className={`badge ${statusLabels[project.status]?.className}`}
+                                >
+                                    {statusLabels[project.status]?.label}
+                                </span>
+                                <span className={styles.timestamp}>{project.updatedAt}</span>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            </div>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    );
 }

@@ -1,141 +1,127 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
+/* ═══════════ Dashboard Page ═══════════ */
 
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-xl);
 }
 
-.main {
-  display: flex;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 2px;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+/* ── Quick Access ── */
+.quickRow {
+    margin-bottom: var(--space-2xl);
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
+.quickCard {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 0.75rem var(--space-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 0.87rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
 }
 
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
+.quickCard:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
 }
 
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+.quickIcon {
+    font-size: 1.1rem;
 }
 
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+.quickLabel {
+    flex: 1;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+.quickArrow {
+    color: var(--text-muted);
+    font-size: 0.85rem;
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+/* ── Projects List ── */
+.section {
+    margin-bottom: var(--space-2xl);
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.projectList {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-card);
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.projectRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg) var(--space-xl);
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    color: inherit;
+    transition: background var(--transition-fast);
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
+.projectRow:last-child {
+    border-bottom: none;
+}
 
-  .page {
-    --background: #000;
-    --foreground: #000;
+.projectRow:hover {
+    background: var(--bg-muted);
+    text-decoration: none;
+}
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
+.projectInfo {
+    flex: 1;
+    min-width: 0;
+}
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
+.projectTitle {
+    font-size: 0.93rem;
+    font-weight: 550;
+    margin-bottom: 2px;
+    color: var(--text-primary);
+}
+
+.projectDesc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 500px;
+}
+
+.projectMeta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-shrink: 0;
+    margin-left: var(--space-xl);
+}
+
+.timestamp {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
 }
