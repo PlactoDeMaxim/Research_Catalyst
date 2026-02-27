@@ -18,6 +18,7 @@ from modules.planner.models.planner_model import (
     MilestoneUpdateRequest,
 )
 from modules.planner.services.rule_engine import generate_plan
+from modules.planner.services.llm_engine import generate_plan_with_llm
 
 
 # ── In-Memory Store ──
@@ -59,7 +60,7 @@ def delete_project(project_id: str) -> bool:
 
 
 def generate_project_plan(project_id: str, topic: str = "", domain: str = "general", deadline: str = "") -> Optional[Project]:
-    """Generate a plan for a project using the rule engine."""
+    """Generate a plan for a project using LLM (with rule engine fallback)."""
     project = _projects.get(project_id)
     if not project:
         return None
@@ -74,8 +75,18 @@ def generate_project_plan(project_id: str, topic: str = "", domain: str = "gener
     project.domain = d
     project.deadline = dl
 
-    # Generate plan
-    phases, milestones = generate_plan(t, d, dl)
+    # Try LLM first
+    # print(f"Attempting LLM plan generation for project {project_id}...")
+    result = generate_plan_with_llm(t, d, dl)
+    
+    if result is not None:
+        # print(f"✓ LLM plan generation successful")
+        phases, milestones = result
+    else:
+        # Fallback to rule engine
+        # print(f"⚠ LLM failed, falling back to rule engine")
+        phases, milestones = generate_plan(t, d, dl)
+    
     project.phases = phases
     project.milestones = milestones
 
