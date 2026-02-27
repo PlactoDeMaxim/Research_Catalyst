@@ -12,14 +12,18 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@hpcc-js/wasm-graphviz": "^1.21.0",
     "@prisma/client": "^5.22.0",
+    "@types/dagre": "^0.7.54",
     "@xyflow/react": "^12.10.1",
+    "dagre": "^0.8.5",
     "katex": "^0.16.32",
     "mermaid": "^11.12.3",
     "next": "16.1.6",
     "prisma": "^5.22.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-zoom-pan-pinch": "^3.7.0"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -5,6 +5,8 @@ POST /api/visualization/diagram/generate  — nodes+edges → definition
 POST /api/visualization/diagram/render    — DOT → SVG
 POST /api/visualization/chart/generate    — data → chart
 POST /api/visualization/export            — SVG → PNG/PDF file
+POST /api/visualization/ai/text-to-diagram — research text → AI diagram
+POST /api/visualization/ai/code-to-diagram — source code → AI diagram
 """
 
 from fastapi import APIRouter, HTTPException
@@ -23,6 +25,11 @@ from modules.visualization.models.chart_model import (
     ChartGenerateRequest,
     ChartGenerateResponse,
 )
+from modules.visualization.models.ai_models import (
+    TextToDiagramRequest,
+    CodeToDiagramRequest,
+    AIDiagramResponse,
+)
 from modules.visualization.services import (
     diagram_generation_service,
     graphviz_render_service,
@@ -30,6 +37,7 @@ from modules.visualization.services import (
     plotly_chart_service,
     export_service,
 )
+from modules.visualization.services import ai_diagram_service
 
 router = APIRouter()
 
@@ -85,3 +93,40 @@ async def export_diagram(req: ExportRequest):
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Export failed: {str(exc)}")
+
+
+# ── AI-Powered Endpoints ──
+
+@router.post("/ai/text-to-diagram", response_model=AIDiagramResponse)
+async def ai_text_to_diagram(req: TextToDiagramRequest) -> AIDiagramResponse:
+    """Generate a diagram from research paper text using AI/LLM."""
+    try:
+        result = await ai_diagram_service.generate_from_text(
+            text=req.text,
+            diagram_type=req.diagram_type.value,
+            diagram_format=req.format.value,
+            title=req.title,
+        )
+        return AIDiagramResponse(**result)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"AI generation failed: {str(exc)}")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"AI diagram generation failed: {str(exc)}")
+
+
+@router.post("/ai/code-to-diagram", response_model=AIDiagramResponse)
+async def ai_code_to_diagram(req: CodeToDiagramRequest) -> AIDiagramResponse:
+    """Generate a diagram from source code using AI/LLM."""
+    try:
+        result = await ai_diagram_service.generate_from_code(
+            code=req.code,
+            language=req.language,
+            diagram_type=req.diagram_type.value,
+            diagram_format=req.format.value,
+            title=req.title,
+        )
+        return AIDiagramResponse(**result)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"AI generation failed: {str(exc)}")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"AI diagram generation failed: {str(exc)}")
