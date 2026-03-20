@@ -10,6 +10,7 @@ const navItems = [
     { href: "/editor", label: "Paper Editor", icon: "📝" },
     { href: "/visualize", label: "Visualize", icon: "📈" },
     { href: "/planner", label: "Planner", icon: "📅" },
+    { href: "/summarizer", label: "Summary", icon: "🧠" },
 ];
 
 const moduleItems = [

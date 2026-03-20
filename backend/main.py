@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from modules.paper_search.routes.search_routes import router as search_router
 from modules.visualization.routes.visualization_routes import router as viz_router
 from modules.planner.routes.planner_routes import router as planner_router
+from modules.summary.routes.summary_routes import router as summary_router
 
 app = FastAPI(
     title="Research Catalyst Backend",
@@ -37,6 +38,7 @@ app.add_middleware(
 app.include_router(search_router, prefix="/api/papers")
 app.include_router(viz_router, prefix="/api/visualization")
 app.include_router(planner_router, prefix="/api/planner")
+app.include_router(summary_router, prefix="/api/summary")
 
 
 @app.get("/health")
