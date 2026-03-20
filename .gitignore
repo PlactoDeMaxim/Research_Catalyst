@@ -39,3 +39,30 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python artifacts (added to ignore files created when running Python/uvicorn)
+# Compiled bytecode
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+
+# pytest
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+coverage.xml
+
+# Misc python
+.python-version
+pip-log.txt
+
+# Jupyter
+.ipynb_checkpoints/
