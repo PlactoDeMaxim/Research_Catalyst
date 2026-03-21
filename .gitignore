@@ -66,3 +66,6 @@ pip-log.txt
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Paper editor runtime temp artifacts
+tmp/

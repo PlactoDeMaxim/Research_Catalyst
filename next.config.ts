@@ -1,7 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: "/editor",
+        destination: "/editor-v2",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
