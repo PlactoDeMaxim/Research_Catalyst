@@ -13,6 +13,7 @@ const navItems = [
     { href: "/editor-v2", label: "Paper Editor", icon: "📝" },
     { href: "/visualize", label: "Visualize", icon: "📈" },
     { href: "/planner", label: "Planner", icon: "📅" },
+    { href: "/citation-manager", label: "Citations", icon: "📚" },
     { href: "/summarizer", label: "Summary", icon: "🧠" },
     { href: "/plagiarism-check", label: "Plagiarism", icon: "🛡️" },
 ];
@@ -20,7 +21,6 @@ const navItems = [
 const moduleItems = [
     { label: "Summarizer", icon: "📋", disabled: true },
     { label: "Code Mapper", icon: "🔗", disabled: true },
-    { label: "Citations", icon: "📚", disabled: true },
 ];
 
 function applySidebarWidth(collapsed: boolean) {
