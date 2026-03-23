@@ -40,12 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Python artifacts (added to ignore files created when running Python/uvicorn)
-# Compiled bytecode
-*.pyc
-*.pyo
-*.pyd
+# Python artifacts
 __pycache__/
+*.py[cod]
+*.cpython-*
+*$py.class
 
 # Virtual environments
 env/
@@ -66,6 +65,3 @@ pip-log.txt
 
 # Jupyter
 .ipynb_checkpoints/
-
-# Paper editor runtime temp artifacts
-tmp/

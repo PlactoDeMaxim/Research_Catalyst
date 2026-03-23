@@ -18,6 +18,7 @@ from modules.visualization.routes.visualization_routes import router as viz_rout
 from modules.planner.routes.planner_routes import router as planner_router
 from modules.summary.routes.summary_routes import router as summary_router
 from modules.paper_editor.routes.paper_editor_routes import router as paper_editor_router
+from modules.plagiarism_check.routes.plagiarism_routes import router as plagiarism_router
 
 app = FastAPI(
     title="Research Catalyst Backend",
@@ -49,6 +50,7 @@ app.include_router(viz_router, prefix="/api/visualization")
 app.include_router(planner_router, prefix="/api/planner")
 app.include_router(summary_router, prefix="/api/summary")
 app.include_router(paper_editor_router, prefix="/api/paper-editor")
+app.include_router(plagiarism_router, prefix="/api/plagiarism-check")
 
 
 @app.get("/health")
