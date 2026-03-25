@@ -1,0 +1,372 @@
+.errorBanner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    margin-bottom: var(--space-lg);
+}
+
+.errorClose {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.configCard {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    background:
+        linear-gradient(135deg, rgba(44, 106, 115, 0.08), rgba(184, 242, 230, 0.25)),
+        var(--bg-card);
+}
+
+.configCard h3 {
+    margin-bottom: 0.35rem;
+}
+
+.configCard p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.configMeta {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: var(--space-lg);
+    align-items: start;
+}
+
+.submitPanel {
+    position: sticky;
+    top: var(--space-lg);
+}
+
+.modeToggle {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: var(--space-md);
+}
+
+.modeButton {
+    border: 1px solid var(--border-color);
+    background: var(--bg-muted);
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    font: inherit;
+    transition: all var(--transition-fast);
+}
+
+.modeButtonActive {
+    background: var(--accent-primary);
+    color: #fff;
+    border-color: var(--accent-primary);
+}
+
+.helperBox {
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--light-blue-900);
+    color: var(--light-blue-200);
+    font-size: 0.83rem;
+    display: grid;
+    gap: 4px;
+    margin-bottom: var(--space-lg);
+}
+
+.form {
+    display: grid;
+    gap: var(--space-md);
+}
+
+.label {
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.textarea {
+    min-height: 220px;
+}
+
+.controls {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.inlineLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+}
+
+.range {
+    flex: 1;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+}
+
+.fileMeta {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: -0.25rem;
+}
+
+.resultsPanel {
+    display: grid;
+    gap: var(--space-lg);
+}
+
+.jobsList,
+.detailPanel {
+    min-height: 320px;
+}
+
+.panelHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.panelHeader p {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.jobCards {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.jobCard {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.jobCard:hover,
+.jobCardActive {
+    border-color: var(--accent-primary);
+    background: linear-gradient(180deg, rgba(184, 242, 230, 0.16), rgba(255, 255, 255, 0.95));
+}
+
+.jobCard h4 {
+    font-size: 0.92rem;
+    margin: 0.55rem 0 0.35rem;
+}
+
+.jobCard p {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.jobTopline {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+}
+
+.jobType,
+.jobTime {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+}
+
+.detailActions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.metricCard {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    display: grid;
+    gap: 0.25rem;
+}
+
+.metricCard strong {
+    font-size: 1.15rem;
+}
+
+.metricLabel {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+.failureBox {
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-md);
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #9a3412;
+    margin-bottom: var(--space-lg);
+}
+
+.section {
+    margin-top: var(--space-lg);
+}
+
+.section h4 {
+    margin-bottom: 0.35rem;
+}
+
+.sectionIntro {
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.sectionList,
+.alertsList {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: var(--space-md);
+}
+
+.sectionCard,
+.alertCard {
+    padding: 0.95rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.findingMeta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-top: 0.65rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.highlight {
+    background: #fff1a8;
+    color: inherit;
+    border-radius: 4px;
+    padding: 0 2px;
+}
+
+.suggestionList {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 0.8rem;
+}
+
+.suggestionItem {
+    padding: 0.65rem 0.8rem;
+    border-radius: var(--radius-md);
+    background: var(--light-blue-900);
+    color: var(--light-blue-200);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.sourcesList {
+    display: grid;
+    gap: 0.85rem;
+    margin-top: var(--space-md);
+}
+
+.sourceRow {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.sourceRow p {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+}
+
+.sourceMeta {
+    display: grid;
+    gap: 0.3rem;
+    text-align: right;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .submitPanel {
+        position: static;
+    }
+}
+
+@media (max-width: 780px) {
+    .configCard,
+    .panelHeader,
+    .sourceRow,
+    .findingMeta {
+        flex-direction: column;
+    }
+
+    .metricsGrid {
+        grid-template-columns: 1fr;
+    }
+}

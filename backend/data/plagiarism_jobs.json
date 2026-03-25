@@ -1,0 +1,444 @@
+{
+  "079b7151-54c8-489f-9435-fa75822f1606": {
+    "id": "079b7151-54c8-489f-9435-fa75822f1606",
+    "scan_id": "pc-submission.txt",
+    "status": "failed",
+    "input_type": "text",
+    "filename": "submission.txt",
+    "created_at": "2026-03-23T10:14:23.143565+00:00",
+    "updated_at": "2026-03-23T10:14:30.372552+00:00",
+    "sandbox": false,
+    "text_preview": "Ethan Hawke (born 1970) is an American actor, author and filmmaker whose career on screen and stage has spanned over four decades. Known for his versatile range of roles\u2014often in art films\u2014and collaborations with direct...",
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": "PlagiarismCheck.org request failed: {\"success\":false,\"code\":1,\"message\":\"Ai package is needed\"}",
+    "ai_detection": null,
+    "plagiarism": null,
+    "alerts": [],
+    "scanned_document": null,
+    "webhook_payload": null
+  },
+  "fcf2c320-c6ee-46de-9859-22d40f6cf758": {
+    "id": "fcf2c320-c6ee-46de-9859-22d40f6cf758",
+    "scan_id": "pc-Tejaswi Pemmasani.pdf",
+    "status": "failed",
+    "input_type": "file",
+    "filename": "Tejaswi Pemmasani.pdf",
+    "created_at": "2026-03-23T10:15:47.863270+00:00",
+    "updated_at": "2026-03-23T10:15:54.146840+00:00",
+    "sandbox": false,
+    "text_preview": null,
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": "PlagiarismCheck.org request failed: {\"success\":false,\"message\":\"File missed\"}",
+    "ai_detection": null,
+    "plagiarism": null,
+    "alerts": [],
+    "scanned_document": null,
+    "webhook_payload": null
+  },
+  "9429b945-4104-4f5a-bf44-502545a144e5": {
+    "id": "9429b945-4104-4f5a-bf44-502545a144e5",
+    "scan_id": "pc-h2.txt",
+    "status": "processing",
+    "input_type": "text",
+    "filename": "h2.txt",
+    "created_at": "2026-03-23T10:19:04.782815+00:00",
+    "updated_at": "2026-03-23T11:21:50.708975+00:00",
+    "sandbox": false,
+    "text_preview": "Ethan Hawke (born 1970) is an American actor, author and filmmaker whose career on screen and stage has spanned over four decades. Known for his versatile range of roles\u2014often in art films\u2014and collaborations with direct...",
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": "PlagiarismCheck.org request failed (409): {\"success\":false,\"message\":\"Not enough pages on your balance\"}",
+    "ai_detection": null,
+    "plagiarism": null,
+    "section_findings": [],
+    "alerts": [],
+    "scanned_document": null,
+    "webhook_payload": null
+  },
+  "d47a500d-150e-425a-b615-d798784ee794": {
+    "id": "d47a500d-150e-425a-b615-d798784ee794",
+    "scan_id": "pc-submission.txt",
+    "status": "failed",
+    "input_type": "text",
+    "filename": "submission.txt",
+    "created_at": "2026-03-23T10:21:42.126922+00:00",
+    "updated_at": "2026-03-23T10:21:45.883961+00:00",
+    "sandbox": false,
+    "text_preview": "FO: 127.0.0.1:54934 - \"GET /api/plagiarism-check/jobs HTTP/1.1\" 200 OK INFO: 127.0.0.1:54934 - \"GET /api/plagiarism-check/jobs HTTP/1.1\" 200 OK INFO: 127.0.0.1:54934 - \"GET /api/plagiarism-check/jobs HTTP/1.1\" 200 OK IN...",
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": "PlagiarismCheck.org request failed (409): {\"success\":false,\"message\":\"Not enough pages on your balance\"}",
+    "ai_detection": null,
+    "plagiarism": null,
+    "alerts": [],
+    "scanned_document": null,
+    "webhook_payload": null
+  },
+  "994ee629-b0ff-4e24-86c3-53e38d2fccc2": {
+    "id": "994ee629-b0ff-4e24-86c3-53e38d2fccc2",
+    "scan_id": "8c338b89-e69b-44ca-aecf-eca73b14c301",
+    "status": "completed",
+    "input_type": "text",
+    "filename": "submission.txt",
+    "created_at": "2026-03-23T11:28:19.203414+00:00",
+    "updated_at": "2026-03-23T11:28:24.730860+00:00",
+    "sandbox": false,
+    "text_preview": "Ethan Hawke (born 1970) is an American actor, author and filmmaker whose career on screen and stage has spanned over four decades. Known for his versatile range of roles\u2014often in art films\u2014and collaborations with direct...",
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": null,
+    "ai_detection": null,
+    "plagiarism": {
+      "aggregatedScore": 3.0,
+      "identicalWords": 1,
+      "minorChangedWords": 0,
+      "relatedMeaningWords": 0,
+      "topSources": [
+        {
+          "id": "https://openalex.org/W2074870150",
+          "title": "The problem body: projecting disability on film",
+          "url": "https://openalex.org/W2074870150",
+          "matchedWords": 1,
+          "introduction": "Disability & Society",
+          "sourceType": "openalex",
+          "similarityScore": 3.0,
+          "overlapSnippet": "edited by Sally Chivers and Nicole Markotic, Columbus, The Ohio State University Press, 2010, 239 pp., $49.95 (hardback), ISBN 978-0-81-421124-3, $14.95 (CD), ISBN 978-0-81-429222..."
+        }
+      ]
+    },
+    "section_findings": [
+      {
+        "title": "Section 1",
+        "textPreview": "Ethan Hawke (born 1970) is an American actor, author and filmmaker whose career on screen and stage has spanned over four decades. Known for his versatile range of roles\u2014often in art films\u2014and collaborations with director Richard Linklater, he made his film debut in Explorers (1...",
+        "similarityScore": 3.0,
+        "riskLabel": "Low overlap",
+        "matchedSource": {
+          "id": "https://openalex.org/W2074870150",
+          "title": "The problem body: projecting disability on film",
+          "url": "https://openalex.org/W2074870150",
+          "matchedWords": 1,
+          "introduction": "Disability & Society",
+          "sourceType": "openalex",
+          "similarityScore": 3.0,
+          "overlapSnippet": "edited by Sally Chivers and Nicole Markotic, Columbus, The Ohio State University Press, 2010, 239 pp., $49.95 (hardback), ISBN 978-0-81-421124-3, $14.95 (CD), ISBN 978-0-81-429222..."
+        },
+        "overlappingPhrases": [],
+        "suggestions": [
+          "Keep the wording concise and cite the originating paper where appropriate."
+        ]
+      }
+    ],
+    "alerts": [
+      {
+        "category": null,
+        "code": null,
+        "title": "MVP corpus notice",
+        "message": "This MVP checks overlap against retrieved scholarly abstracts, not the full web or closed academic databases.",
+        "helpLink": null,
+        "severity": null,
+        "additionalData": null
+      }
+    ],
+    "scanned_document": null,
+    "webhook_payload": null
+  },
+  "afbd8d31-33c9-44f9-8203-d6ac07818887": {
+    "id": "afbd8d31-33c9-44f9-8203-d6ac07818887",
+    "scan_id": "b15cc6d8-b9b5-44e4-bce9-204f36fb5d05",
+    "status": "completed",
+    "input_type": "text",
+    "filename": "abstract.txt",
+    "created_at": "2026-03-23T11:29:55.514589+00:00",
+    "updated_at": "2026-03-23T11:30:04.623031+00:00",
+    "sandbox": false,
+    "text_preview": "When we gain awareness of the world, it is also when we start gathering information and data to transform them into our understanding. The more capable we are of gathering and having knowledge, the more opportunities we...",
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": null,
+    "ai_detection": null,
+    "plagiarism": {
+      "aggregatedScore": 4.4,
+      "identicalWords": 1,
+      "minorChangedWords": 0,
+      "relatedMeaningWords": 0,
+      "topSources": [
+        {
+          "id": "https://openalex.org/W2134295053",
+          "title": "Internet of Things: A Survey on Enabling Technologies, Protocols, and Applications",
+          "url": "https://openalex.org/W2134295053",
+          "matchedWords": 1,
+          "introduction": "IEEE Communications Surveys & Tutorials",
+          "sourceType": "openalex",
+          "similarityScore": 4.4,
+          "overlapSnippet": "This paper provides an overview of the Internet of Things (IoT) with emphasis on enabling technologies, protocols, and application issues. The IoT is enabled by the latest develop..."
+        }
+      ]
+    },
+    "section_findings": [
+      {
+        "title": "Section 1",
+        "textPreview": "When we gain awareness of the world, it is also when we start gathering information and data to transform them into our understanding. The more capable we are of gathering and having knowledge, the more opportunities we have to lead a better life.",
+        "similarityScore": 4.4,
+        "riskLabel": "Low overlap",
+        "matchedSource": {
+          "id": "https://openalex.org/W2134295053",
+          "title": "Internet of Things: A Survey on Enabling Technologies, Protocols, and Applications",
+          "url": "https://openalex.org/W2134295053",
+          "matchedWords": 1,
+          "introduction": "IEEE Communications Surveys & Tutorials",
+          "sourceType": "openalex",
+          "similarityScore": 4.4,
+          "overlapSnippet": "This paper provides an overview of the Internet of Things (IoT) with emphasis on enabling technologies, protocols, and application issues. The IoT is enabled by the latest develop..."
+        },
+        "overlappingPhrases": [],
+        "suggestions": [
+          "Keep the wording concise and cite the originating paper where appropriate."
+        ]
+      }
+    ],
+    "alerts": [
+      {
+        "category": null,
+        "code": null,
+        "title": "MVP corpus notice",
+        "message": "This MVP checks overlap against retrieved scholarly abstracts, not the full web or closed academic databases.",
+        "helpLink": null,
+        "severity": null,
+        "additionalData": null
+      }
+    ],
+    "scanned_document": null,
+    "webhook_payload": null
+  },
+  "3127095e-9c60-4441-ba1d-720605f3eb36": {
+    "id": "3127095e-9c60-4441-ba1d-720605f3eb36",
+    "scan_id": "697568c4-e101-4de8-85a0-68e5c37d9247",
+    "status": "completed",
+    "input_type": "text",
+    "filename": "abstract.txt",
+    "created_at": "2026-03-23T11:32:29.776377+00:00",
+    "updated_at": "2026-03-23T11:32:39.357907+00:00",
+    "sandbox": false,
+    "text_preview": "This chapter examines how the figure of the female melancholic, as she appears in Mary Wollstonecraft's A Vindication of the Rights of Woman and A Short Residence in Sweden, Norway, and Denmark, Mary Shelley's Matilda,...",
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": null,
+    "ai_detection": null,
+    "plagiarism": {
+      "aggregatedScore": 10.6,
+      "identicalWords": 5,
+      "minorChangedWords": 0,
+      "relatedMeaningWords": 0,
+      "topSources": [
+        {
+          "id": "https://openalex.org/W2163568095",
+          "title": "Exhibiting Cinema in Contemporary Art",
+          "url": "https://openalex.org/W2163568095",
+          "matchedWords": 5,
+          "introduction": "Amsterdam University Press eBooks",
+          "sourceType": "openalex",
+          "similarityScore": 10.6,
+          "overlapSnippet": "concidences fatales, Muse des beaux-arts de Montral ( November - March )"
+        }
+      ]
+    },
+    "section_findings": [
+      {
+        "title": "Section 1",
+        "textPreview": "This chapter examines how the figure of the female melancholic, as she appears in Mary Wollstonecraft's A Vindication of the Rights of Woman and A Short Residence in Sweden, Norway, and Denmark, Mary Shelley's Matilda, and Jane Austen's Persuasion, dramatizes multiple concerns a...",
+        "similarityScore": 10.6,
+        "riskLabel": "Low overlap",
+        "matchedSource": {
+          "id": "https://openalex.org/W2163568095",
+          "title": "Exhibiting Cinema in Contemporary Art",
+          "url": "https://openalex.org/W2163568095",
+          "matchedWords": 5,
+          "introduction": "Amsterdam University Press eBooks",
+          "sourceType": "openalex",
+          "similarityScore": 10.6,
+          "overlapSnippet": "concidences fatales, Muse des beaux-arts de Montral ( November - March )"
+        },
+        "overlappingPhrases": [],
+        "suggestions": [
+          "Keep the wording concise and cite the originating paper where appropriate."
+        ]
+      }
+    ],
+    "alerts": [
+      {
+        "category": null,
+        "code": null,
+        "title": "MVP corpus notice",
+        "message": "This MVP checks overlap against retrieved scholarly abstracts, not the full web or closed academic databases.",
+        "helpLink": null,
+        "severity": null,
+        "additionalData": null
+      }
+    ],
+    "scanned_document": null,
+    "webhook_payload": null
+  },
+  "40af5b32-de0f-47d8-9879-308e55b499cc": {
+    "id": "40af5b32-de0f-47d8-9879-308e55b499cc",
+    "scan_id": "805d457e-8edf-458a-ab30-b0a493e74987",
+    "status": "completed",
+    "input_type": "file",
+    "filename": "Tejaswi Pemmasani.pdf",
+    "created_at": "2026-03-23T11:50:57.941977+00:00",
+    "updated_at": "2026-03-23T11:51:02.237787+00:00",
+    "sandbox": false,
+    "text_preview": null,
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": null,
+    "ai_detection": null,
+    "plagiarism": {
+      "aggregatedScore": 1.4,
+      "identicalWords": 12,
+      "minorChangedWords": 0,
+      "relatedMeaningWords": 0,
+      "topSources": [
+        {
+          "id": "https://openalex.org/W2917207851",
+          "title": "The Galaxy platform for accessible, reproducible and collaborative biomedical analyses: 2018 update",
+          "url": "https://openalex.org/W2917207851",
+          "matchedWords": 12,
+          "introduction": "Nucleic Acids Research",
+          "sourceType": "openalex",
+          "similarityScore": 2.7,
+          "overlapSnippet": "Galaxy (homepage: https://galaxyproject.org, main public server: https://usegalaxy.org) is a web-based scientific analysis platform used by tens of thousands of scientists across..."
+        }
+      ]
+    },
+    "section_findings": [
+      {
+        "title": "Section 1",
+        "textPreview": "Sai Tejaswi Pemmasani India | www.linkedin.com/in/tejaswipemmasani | pemmasanitejaswi@outlook.com | 9459567333 EDUCATION The Apollo University Chittoor Bachelor of Technology in Computer Science | CGPA: 9.93 Expected: Apr 2026 \u2022 I\u2019m majoring in Computer Science and specializing...",
+        "similarityScore": 2.7,
+        "riskLabel": "Low overlap",
+        "matchedSource": {
+          "id": "https://openalex.org/W2917207851",
+          "title": "The Galaxy platform for accessible, reproducible and collaborative biomedical analyses: 2018 update",
+          "url": "https://openalex.org/W2917207851",
+          "matchedWords": 12,
+          "introduction": "Nucleic Acids Research",
+          "sourceType": "openalex",
+          "similarityScore": 2.7,
+          "overlapSnippet": "Galaxy (homepage: https://galaxyproject.org, main public server: https://usegalaxy.org) is a web-based scientific analysis platform used by tens of thousands of scientists across..."
+        },
+        "overlappingPhrases": [
+          "from users across"
+        ],
+        "suggestions": [
+          "Keep the wording concise and cite the originating paper where appropriate.",
+          "Avoid reusing phrases like: from users across."
+        ]
+      },
+      {
+        "title": "Section 1",
+        "textPreview": "Achieved a global rank of 1554 in TCS CodeVita Season 12, one of the world\u2019s largest coding competitions.",
+        "similarityScore": 0.0,
+        "riskLabel": "Low overlap",
+        "matchedSource": null,
+        "overlappingPhrases": [],
+        "suggestions": [
+          "Keep the wording concise and cite the originating paper where appropriate."
+        ]
+      }
+    ],
+    "alerts": [
+      {
+        "category": null,
+        "code": null,
+        "title": "MVP corpus notice",
+        "message": "This MVP checks overlap against retrieved scholarly abstracts, not the full web or closed academic databases.",
+        "helpLink": null,
+        "severity": null,
+        "additionalData": null
+      }
+    ],
+    "scanned_document": {
+      "extractedTextPreview": "Sai Tejaswi Pemmasani India | www.linkedin.com/in/tejaswipemmasani | pemmasanitejaswi@outlook.com | 9459567333 EDUCATION The Apollo University Chittoor Bachelor of Technology in Computer Science | CGPA: 9.93 Expected: Apr 2026 \u2022 I\u2019m majoring in Computer Science and specializing in Artificial Intelligence and Data Science. \u2022 Awards : Merit Scholarship (Full Tuition Waiver) \u2022 Relevant Coursework : Foundations of Data Science, Machine Learning, Natural Language Processing, Image Processing, R Lab,..."
+    },
+    "webhook_payload": null
+  },
+  "593aabaf-8eeb-4227-a64f-577b1136a4a4": {
+    "id": "593aabaf-8eeb-4227-a64f-577b1136a4a4",
+    "scan_id": "9db26215-7a85-49b3-b0e9-3547ea1186d4",
+    "status": "completed",
+    "input_type": "text",
+    "filename": "submission.txt",
+    "created_at": "2026-03-23T11:53:23.184380+00:00",
+    "updated_at": "2026-03-23T11:53:28.722246+00:00",
+    "sandbox": false,
+    "text_preview": "but assurance, based on the system of mutual control within the network. In collectivist societies, security is assured insofar as people stay within the network, but people do not trust in the benevolence of human natu...",
+    "webhook_status": null,
+    "plagiarism_text_id": null,
+    "ai_check_id": null,
+    "error": null,
+    "ai_detection": null,
+    "plagiarism": {
+      "aggregatedScore": 4.4,
+      "identicalWords": 2,
+      "minorChangedWords": 0,
+      "relatedMeaningWords": 0,
+      "topSources": [
+        {
+          "id": "https://openalex.org/W1991384030",
+          "title": "Online Social Networking and Addiction\u2014A Review of the Psychological Literature",
+          "url": "https://openalex.org/W1991384030",
+          "matchedWords": 2,
+          "introduction": "International Journal of Environmental Research and Public Health",
+          "sourceType": "openalex",
+          "similarityScore": 4.4,
+          "overlapSnippet": "Social Networking Sites (SNSs) are virtual communities where users can create individual public profiles, interact with real-life friends, and meet other people based on shared in..."
+        }
+      ]
+    },
+    "section_findings": [
+      {
+        "title": "Section 1",
+        "textPreview": "but assurance, based on the system of mutual control within the network. In collectivist societies, security is assured insofar as people stay within the network, but people do not trust in the benevolence of human nature. On the one hand, transaction costs are reduced within co...",
+        "similarityScore": 4.4,
+        "riskLabel": "Low overlap",
+        "matchedSource": {
+          "id": "https://openalex.org/W1991384030",
+          "title": "Online Social Networking and Addiction\u2014A Review of the Psychological Literature",
+          "url": "https://openalex.org/W1991384030",
+          "matchedWords": 2,
+          "introduction": "International Journal of Environmental Research and Public Health",
+          "sourceType": "openalex",
+          "similarityScore": 4.4,
+          "overlapSnippet": "Social Networking Sites (SNSs) are virtual communities where users can create individual public profiles, interact with real-life friends, and meet other people based on shared in..."
+        },
+        "overlappingPhrases": [],
+        "suggestions": [
+          "Keep the wording concise and cite the originating paper where appropriate."
+        ]
+      }
+    ],
+    "alerts": [
+      {
+        "category": null,
+        "code": null,
+        "title": "MVP corpus notice",
+        "message": "This MVP checks overlap against retrieved scholarly abstracts, not the full web or closed academic databases.",
+        "helpLink": null,
+        "severity": null,
+        "additionalData": null
+      }
+    ],
+    "scanned_document": null,
+    "webhook_payload": null
+  }
+}

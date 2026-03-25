@@ -1,0 +1,13 @@
+# Fdb version 4
+["pdflatex"] 1774086173.80502 "compiled_input.tex" "compiled_input.pdf" "compiled_input" 1774086175.19497 2
+  "/opt/texlive/texdir/texmf-dist/web2c/texmf.cnf" 1749313668 42213 4e2ca030e8e2640502016e9e45868dcb ""
+  "/opt/texlive/texdir/texmf-var/web2c/pdftex/pdflatex.fmt" 1767234718 3635491 02f4bd8ac1b2473798778c34202f8a10 ""
+  "/opt/texlive/texdir/texmf.cnf" 1767234622 555 bd60ff59e4d560b42d96b004436f91d3 ""
+  "IEEEtai.cls" 0 -1 0 ""
+  "compiled_input.aux" 1774086161 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "compiled_input.tex" 1774086172.83605 49888 f2cd9e37eec8ffaaacf703adce370691 ""
+  (generated)
+  "compiled_input.aux"
+  "compiled_input.log"
+  "compiled_input.pdf"
+  (rewritten before read)

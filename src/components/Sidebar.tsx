@@ -15,10 +15,11 @@ const navItems = [
     { href: "/planner", label: "Planner", icon: "📅" },
     { href: "/summarizer", label: "Summarizer", icon: "🧠" },
     { href: "/code-mapper", label: "Code Mapper", icon: "🔗" },
+    { href: "/plagiarism-check", label: "Plagiarism", icon: "🛡️" },
 ];
 
+
 const moduleItems = [
-    { label: "Plagiarism", icon: "🛡️", disabled: true },
     { label: "Citations", icon: "📚", disabled: true },
 ];
 
