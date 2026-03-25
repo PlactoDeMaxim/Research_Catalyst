@@ -1,11 +1,9 @@
 """
-Paper Writer Service — Section-by-section academic paper generation.
+Paper Writer Service — Single-call project report generation.
 
-Uses a 2-pass approach:
-  Pass 1 — Draft each section independently with section-specific prompts
-  Pass 2 — Critic pass: review each draft for redundancy, coherence, and tone
-
-Inspired by AI-Scientist's ``perform_writeup`` module.
+Generates all report sections in ONE LLM call as structured JSON,
+replacing the previous 2-pass (draft + critic) approach that consumed
+~16 LLM calls per paper.
 """
 
 from __future__ import annotations
@@ -15,7 +13,6 @@ import logging
 from typing import Any
 
 from modules.code_mapper.models.code_mapper_models import (
-    CitationEntry,
     PaperSectionDraft,
     RepoStructure,
 )
@@ -23,73 +20,54 @@ from modules.code_mapper.services import llm_client
 
 logger = logging.getLogger(__name__)
 
-# Standard academic paper sections with generation tips
-_SECTION_SPECS: list[dict[str, str]] = [
+# Report sections to generate
+_REPORT_SECTIONS = [
     {
         "id": "abstract",
         "title": "Abstract",
-        "tip": (
-            "Write a concise 150-250 word summary. State the problem, method, "
-            "key results, and significance. No citations in the abstract."
+        "instruction": (
+            "Write a concise 150-250 word summary. State the problem the project solves, "
+            "the approach/method used, key features, and significance."
         ),
     },
     {
         "id": "introduction",
         "title": "Introduction",
-        "tip": (
-            "Motivate the problem, state contributions (as a numbered list), "
-            "and outline the paper structure. End with a paragraph summarising "
-            "the rest of the paper."
-        ),
-    },
-    {
-        "id": "related_work",
-        "title": "Related Work",
-        "tip": (
-            "Discuss prior work in thematic groups. Compare and contrast with "
-            "the current approach. Use \\cite{key} for references. "
-            "Do NOT fabricate citations — use only those provided."
+        "instruction": (
+            "Motivate the problem, explain why this project exists, state the main "
+            "contributions as a numbered list, and outline the rest of the report."
         ),
     },
     {
         "id": "methodology",
         "title": "Methodology",
-        "tip": (
-            "Describe the technical approach in detail: architecture, data pipeline, "
-            "loss functions, training procedure. Use equations where appropriate. "
+        "instruction": (
+            "Describe the technical approach in detail: algorithms, data flow, "
+            "key design decisions, and any frameworks/libraries used. "
             "Be precise enough for reproducibility."
         ),
     },
     {
         "id": "architecture",
         "title": "System Architecture",
-        "tip": (
-            "Describe the high-level system design: components, data flow, "
-            "class hierarchy. Reference specific modules and files from the codebase."
-        ),
-    },
-    {
-        "id": "experiments",
-        "title": "Experiments",
-        "tip": (
-            "Describe the experimental setup: datasets, baselines, metrics, "
-            "hardware. If actual results are unavailable, describe the intended "
-            "evaluation protocol."
+        "instruction": (
+            "Describe the high-level system design: components, modules, data flow, "
+            "class hierarchy. Reference specific files and modules from the codebase."
         ),
     },
     {
         "id": "results",
         "title": "Results and Discussion",
-        "tip": (
-            "Present findings with analysis. If actual metrics are available, "
-            "report them precisely. Otherwise, describe expected outcomes based "
-            "on the methodology. Discuss limitations."
+        "instruction": (
+            "Discuss what the project achieves, its strengths, limitations, "
+            "and any performance characteristics. If actual metrics are unavailable, "
+            "describe expected outcomes based on the methodology."
         ),
     },
     {
         "id": "conclusion",
         "title": "Conclusion",
-        "tip": (
+        "instruction": (
             "Summarise contributions, discuss limitations, and suggest future work. "
             "Keep it concise (1-2 paragraphs)."
         ),
@@ -101,139 +79,91 @@ _SECTION_SPECS: list[dict[str, str]] = [
 # Public API
 # ---------------------------------------------------------------------------
 
-async def generate_paper(
-    repo: RepoStructure,
-    citations: list[CitationEntry] | None = None,
-) -> list[PaperSectionDraft]:
-    """Full 2-pass paper generation pipeline."""
+async def generate_report(repo: RepoStructure) -> list[PaperSectionDraft]:
+    """Generate all report sections in a single LLM call.
 
-    citations = citations or []
+    Returns a list of PaperSectionDraft objects with editable content.
+    """
+
     context = _build_repo_context(repo)
-    cite_context = _build_citation_context(citations)
-
-    # Pass 1: draft each section
-    drafts: list[PaperSectionDraft] = []
-    prev_sections: list[dict[str, str]] = []
-
-    for spec in _SECTION_SPECS:
-        draft = await _draft_section(
-            spec, context, cite_context, prev_sections
-        )
-        drafts.append(draft)
-        prev_sections.append({"title": draft.title, "content": draft.content[:500]})
-
-    # Pass 2: critic refinement
-    refined: list[PaperSectionDraft] = []
-    for draft in drafts:
-        improved = await _refine_section(draft, drafts, context)
-        refined.append(improved)
-
-    return refined
-
-
-# ---------------------------------------------------------------------------
-# Pass 1 — Drafting
-# ---------------------------------------------------------------------------
-
-async def _draft_section(
-    spec: dict[str, str],
-    repo_context: str,
-    cite_context: str,
-    prev_sections: list[dict[str, str]],
-) -> PaperSectionDraft:
-    prev_text = ""
-    if prev_sections:
-        prev_text = "\n".join(
-            f"[{p['title']}]: {p['content']}" for p in prev_sections[-3:]
-        )
+    sections_spec = json.dumps(
+        [{"id": s["id"], "title": s["title"], "instruction": s["instruction"]}
+         for s in _REPORT_SECTIONS],
+        indent=2,
+    )
 
     system = (
-        "You are an expert academic writer producing a research paper from a code repository. "
-        "Write in formal academic English with LaTeX formatting.\n\n"
-        f"Section: {spec['title']}\n"
-        f"Writing tip: {spec['tip']}\n\n"
+        "You are an expert technical writer. Generate a complete project report "
+        "from the repository analysis provided below.\n\n"
         "Rules:\n"
-        "- Use formal, third-person academic prose\n"
-        "- Include \\cite{key} references where appropriate (use only provided citations)\n"
-        "- Use LaTeX math notation for equations\n"
-        "- No placeholder text or TODOs\n"
-        "- Output ONLY the section content (no section heading, no markdown fences)"
+        "- Write in formal, clear, third-person technical prose\n"
+        "- Be specific — reference actual files, classes, and functions from the codebase\n"
+        "- No placeholder text, no TODOs, no fabricated information\n"
+        "- Each section should be substantial (at least 150 words)\n"
+        "- Use plain text, no LaTeX or markdown formatting\n\n"
+        "You MUST respond with a JSON object containing a 'sections' array.\n"
+        "Each element must have: 'id' (string), 'title' (string), 'content' (string).\n"
+        "Generate content for ALL of the following sections:\n\n"
+        f"{sections_spec}"
     )
 
-    user = (
-        f"Repository context:\n{repo_context}\n\n"
-        f"Available citations:\n{cite_context}\n\n"
-    )
-    if prev_text:
-        user += f"Previous sections (for continuity):\n{prev_text}\n\n"
-    user += f"Write the '{spec['title']}' section now."
+    user = f"Repository analysis:\n\n{context}"
 
-    content = await llm_client.chat(
-        [{"role": "system", "content": system}, {"role": "user", "content": user}],
-        max_tokens=3000,
-        temperature=0.4,
-    )
+    try:
+        result = await llm_client.chat_json(
+            [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            max_tokens=4096,
+            temperature=0.4,
+        )
 
-    cite_keys = _extract_cite_keys(content)
-    words = len(content.split())
+        raw_sections = result.get("sections", [])
+        if not isinstance(raw_sections, list):
+            raise ValueError(f"Expected 'sections' array, got: {type(raw_sections)}")
 
-    return PaperSectionDraft(
-        section_id=spec["id"],
-        title=spec["title"],
-        content=content.strip(),
-        citations=cite_keys,
-        word_count=words,
-    )
+        drafts: list[PaperSectionDraft] = []
+        generated_ids = {s.get("id") for s in raw_sections if isinstance(s, dict)}
+
+        for spec in _REPORT_SECTIONS:
+            # Find matching section in LLM response
+            match = next(
+                (s for s in raw_sections
+                 if isinstance(s, dict) and s.get("id") == spec["id"]),
+                None,
+            )
+            content = ""
+            if match:
+                content = str(match.get("content", "")).strip()
+
+            if not content:
+                content = f"[This section needs to be written: {spec['instruction']}]"
+
+            drafts.append(PaperSectionDraft(
+                section_id=spec["id"],
+                title=spec["title"],
+                content=content,
+                citations=[],
+                word_count=len(content.split()),
+            ))
+
+        return drafts
+
+    except Exception as exc:
+        logger.error("Report generation failed: %s", exc)
+        # Return skeleton sections so the user can still edit
+        return [
+            PaperSectionDraft(
+                section_id=spec["id"],
+                title=spec["title"],
+                content=f"[Generation failed. Please write this section manually: {spec['instruction']}]",
+                citations=[],
+                word_count=0,
+            )
+            for spec in _REPORT_SECTIONS
+        ]
 
 
 # ---------------------------------------------------------------------------
-# Pass 2 — Critic refinement
-# ---------------------------------------------------------------------------
-
-async def _refine_section(
-    draft: PaperSectionDraft,
-    all_drafts: list[PaperSectionDraft],
-    repo_context: str,
-) -> PaperSectionDraft:
-    other_titles = [
-        d.title for d in all_drafts if d.section_id != draft.section_id
-    ]
-
-    system = (
-        "You are a rigorous academic reviewer. Improve the following paper section:\n"
-        "1. Remove redundancy with other sections\n"
-        "2. Strengthen academic tone and clarity\n"
-        "3. Ensure technical accuracy\n"
-        "4. Check citation formatting (\\cite{key})\n"
-        "5. Improve transitions between paragraphs\n\n"
-        "Output ONLY the improved section text."
-    )
-
-    user = (
-        f"Section: {draft.title}\n\n"
-        f"Draft:\n{draft.content}\n\n"
-        f"Other sections in the paper: {', '.join(other_titles)}\n"
-        f"Repository context (for accuracy checking):\n{repo_context[:3000]}"
-    )
-
-    refined = await llm_client.chat(
-        [{"role": "system", "content": system}, {"role": "user", "content": user}],
-        max_tokens=3000,
-        temperature=0.3,
-    )
-
-    cite_keys = _extract_cite_keys(refined)
-    return PaperSectionDraft(
-        section_id=draft.section_id,
-        title=draft.title,
-        content=refined.strip(),
-        citations=cite_keys,
-        word_count=len(refined.split()),
-    )
-
-
-# ---------------------------------------------------------------------------
-# Context builders
+# Context builder
 # ---------------------------------------------------------------------------
 
 def _build_repo_context(repo: RepoStructure) -> str:
@@ -274,26 +204,4 @@ def _build_repo_context(repo: RepoStructure) -> str:
     if repo.training_scripts:
         parts.append(f"\nTraining scripts: {', '.join(repo.training_scripts)}")
 
-    return "\n".join(parts)[:12_000]
-
-
-def _build_citation_context(citations: list[CitationEntry]) -> str:
-    if not citations:
-        return "No citations available yet."
-
-    lines = []
-    for c in citations[:30]:
-        authors = ", ".join(c.authors[:3])
-        lines.append(f"\\cite{{{c.cite_key}}} — {c.title} ({authors}, {c.year})")
-    return "\n".join(lines)
-
-
-def _extract_cite_keys(text: str) -> list[str]:
-    import re
-    keys: list[str] = []
-    for m in re.finditer(r"\\cite\{([^}]+)\}", text):
-        for k in m.group(1).split(","):
-            k = k.strip()
-            if k and k not in keys:
-                keys.append(k)
-    return keys
+    return "\n".join(parts)[:10_000]

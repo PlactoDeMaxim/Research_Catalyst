@@ -201,6 +201,16 @@ class RepoToPaperResult(BaseModel):
     word_path: Optional[str] = None
 
 
+class SectionUpdate(BaseModel):
+    section_id: str
+    title: str
+    content: str
+
+
+class SectionsUpdateRequest(BaseModel):
+    sections: list[SectionUpdate]
+
+
 # ---------------------------------------------------------------------------
 # Download endpoint helpers
 # ---------------------------------------------------------------------------

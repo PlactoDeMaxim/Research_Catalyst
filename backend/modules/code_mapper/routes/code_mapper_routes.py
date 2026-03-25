@@ -17,11 +17,13 @@ from pydantic import BaseModel
 from modules.code_mapper.models.code_mapper_models import (
     JobPhase,
     JobStatus,
+    PaperSectionDraft,
     PaperToCodeResult,
     PaperUploadResponse,
     RepoAnalyzeRequest,
     RepoAnalyzeResponse,
     RepoToPaperResult,
+    SectionsUpdateRequest,
 )
 from modules.code_mapper.services import job_manager
 
@@ -131,12 +133,12 @@ async def paper_to_code_download(job_id: str):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Feature 2 — Repo-to-Paper
+# Feature 2 — Repo-to-Paper (Simplified: Editable Project Report)
 # ═══════════════════════════════════════════════════════════════════════════
 
 @router.post("/repo-to-paper/analyze", response_model=RepoAnalyzeResponse)
 async def analyze_repo(req: RepoAnalyzeRequest):
-    """Submit a GitHub repository URL and start the paper generation pipeline."""
+    """Submit a GitHub repository URL and start the report generation pipeline."""
 
     if not req.github_url.strip():
         raise HTTPException(status_code=400, detail="GitHub URL is required.")
@@ -178,6 +180,75 @@ async def repo_to_paper_result(job_id: str):
     if job.phase not in (JobPhase.COMPLETED, JobPhase.FAILED):
         raise HTTPException(status_code=202, detail="Job still in progress.")
     return job.result or {}
+
+
+@router.put("/repo-to-paper/sections/{job_id}")
+async def update_sections(job_id: str, req: SectionsUpdateRequest):
+    """Receive edited sections from frontend, re-export LaTeX/Word, update job result."""
+    from modules.code_mapper.services.export_service import export_latex, export_word
+
+    job = job_manager.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found.")
+    if job.phase != JobPhase.COMPLETED:
+        raise HTTPException(status_code=400, detail="Job not completed yet.")
+
+    # Rebuild sections from the update
+    sections = [
+        PaperSectionDraft(
+            section_id=s.section_id,
+            title=s.title,
+            content=s.content,
+            citations=[],
+            word_count=len(s.content.split()),
+        )
+        for s in req.sections
+    ]
+
+    # Get the existing result to retrieve repo structure
+    existing_result = job.result or {}
+    from modules.code_mapper.models.code_mapper_models import RepoStructure
+    repo = RepoStructure(**existing_result.get("repo_structure", {"name": "project"}))
+
+    # Re-export
+    output_formats = existing_result.get("output_formats", ["latex", "word"])
+    latex_path = None
+    word_path = None
+
+    if "latex" in output_formats:
+        latex_dir = export_latex(
+            repo, sections, [], "", job_id,
+            existing_result.get("paper_style", "generic"),
+        )
+        latex_path = str(latex_dir / "main.tex")
+
+    if "word" in output_formats:
+        word_file = export_word(repo, sections, [], job_id)
+        word_path = str(word_file)
+
+    # Update job result
+    result = RepoToPaperResult(
+        repo_structure=repo,
+        sections=sections,
+        citations=[],
+        bibtex_content="",
+        latex_path=latex_path,
+        word_path=word_path,
+    )
+
+    updated_result = result.model_dump(mode="json")
+    updated_result["output_formats"] = output_formats
+    updated_result["paper_style"] = existing_result.get("paper_style", "generic")
+
+    job_manager.update_job(
+        job_id,
+        phase=JobPhase.COMPLETED,
+        progress=100.0,
+        message="Report updated and re-exported!",
+        result=updated_result,
+    )
+
+    return {"status": "ok", "message": "Sections updated and re-exported."}
 
 
 @router.get("/repo-to-paper/download/{job_id}")
@@ -308,84 +379,67 @@ async def _paper_to_code_pipeline(job_id: str, file_path: Path) -> None:
 
 
 async def _repo_to_paper_pipeline(job_id: str, req: RepoAnalyzeRequest) -> None:
-    """Full Repo-to-Paper pipeline: clone → analyze → cite → write → refine → export."""
+    """Simplified Repo-to-Paper pipeline: clone → analyze → write → export.
+
+    Reduced from 6 stages to 3. No citation discovery, no multi-round injection,
+    no 2-pass refinement. Single LLM call for report generation.
+    """
 
     from modules.code_mapper.services.repo_analyzer_service import analyze_repo
-    from modules.code_mapper.services.citation_service import (
-        discover_citations,
-        inject_citations,
-        generate_bibtex,
-    )
-    from modules.code_mapper.services.paper_writer_service import generate_paper
+    from modules.code_mapper.services.paper_writer_service import generate_report
     from modules.code_mapper.services.export_service import export_latex, export_word
 
     # Step 1: Clone & analyze
     job_manager.update_job(
-        job_id, phase=JobPhase.ANALYZING, progress=5.0,
+        job_id, phase=JobPhase.ANALYZING, progress=10.0,
         message="Cloning and analyzing repository…",
     )
     repo = await analyze_repo(req.github_url, job_id)
 
-    # Step 2: Discover citations
-    job_manager.update_job(
-        job_id, phase=JobPhase.CITING, progress=20.0,
-        message="Searching for relevant literature…",
-    )
-    citations = await discover_citations(repo)
-
-    # Step 3: Generate paper sections
+    # Step 2: Generate report (single LLM call)
     job_manager.update_job(
         job_id, phase=JobPhase.GENERATING, progress=40.0,
-        message="Writing paper sections…",
+        message="Writing report sections…",
     )
-    sections = await generate_paper(repo, citations)
+    sections = await generate_report(repo)
 
-    # Step 4: Inject citations
+    # Step 3: Export
     job_manager.update_job(
-        job_id, phase=JobPhase.CITING, progress=65.0,
-        message="Injecting and verifying citations…",
+        job_id, phase=JobPhase.EXPORTING, progress=80.0,
+        message="Exporting report…",
     )
-    sections = await inject_citations(sections, citations)
-
-    # Step 5: Refine (already done in generate_paper's 2-pass, but this is post-citation)
-    job_manager.update_job(
-        job_id, phase=JobPhase.REFINING, progress=80.0,
-        message="Final refinement pass…",
-    )
-
-    # Step 6: Export
-    job_manager.update_job(
-        job_id, phase=JobPhase.EXPORTING, progress=90.0,
-        message="Exporting paper…",
-    )
-    bibtex = generate_bibtex(citations)
 
     latex_path = None
     word_path = None
 
     if "latex" in req.output_formats:
         latex_dir = export_latex(
-            repo, sections, citations, bibtex, job_id, req.paper_style
+            repo, sections, [], "", job_id, req.paper_style
         )
         latex_path = str(latex_dir / "main.tex")
 
     if "word" in req.output_formats:
-        word_file = export_word(repo, sections, citations, job_id)
+        word_file = export_word(repo, sections, [], job_id)
         word_path = str(word_file)
 
     result = RepoToPaperResult(
         repo_structure=repo,
         sections=sections,
-        citations=citations,
-        bibtex_content=bibtex,
+        citations=[],
+        bibtex_content="",
         latex_path=latex_path,
         word_path=word_path,
     )
+
+    result_dict = result.model_dump(mode="json")
+    # Store output_formats and paper_style so sections update endpoint can re-export
+    result_dict["output_formats"] = req.output_formats
+    result_dict["paper_style"] = req.paper_style
 
     job_manager.update_job(
         job_id,
         phase=JobPhase.COMPLETED,
         progress=100.0,
-        message="Paper generation complete!",
-        result=result.model_dump(mode="json"),
+        message="Report generation complete!",
+        result=result_dict,
     )

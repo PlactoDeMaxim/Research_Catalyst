@@ -23,24 +23,10 @@ interface Section {
     word_count: number;
 }
 
-interface Citation {
-    cite_key: string;
-    title: string;
-    authors: string[];
-    year: number;
-    venue: string;
-    doi: string | null;
-    verified: boolean;
-    verification_layers: string[];
-    relevance_score: number;
-}
-
 const PIPELINE_STEPS = [
-    { phase: "analyzing", label: "Analyze" },
-    { phase: "citing", label: "Cite" },
-    { phase: "generating", label: "Write" },
-    { phase: "refining", label: "Refine" },
-    { phase: "exporting", label: "Export" },
+    { phase: "analyzing", label: "Analyzing Repo" },
+    { phase: "generating", label: "Writing Report" },
+    { phase: "exporting", label: "Exporting" },
 ];
 
 export default function RepoToPaperPage() {
@@ -50,7 +36,9 @@ export default function RepoToPaperPage() {
     const [jobId, setJobId] = useState<string | null>(null);
     const [status, setStatus] = useState<JobStatus | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+    const [editedSections, setEditedSections] = useState<Section[]>([]);
+    const [saving, setSaving] = useState(false);
+    const [saveMsg, setSaveMsg] = useState<string | null>(null);
     const eventSourceRef = useRef<EventSource | null>(null);
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -59,7 +47,8 @@ export default function RepoToPaperPage() {
 
         setError(null);
         setStatus(null);
-        setExpandedSections(new Set());
+        setEditedSections([]);
+        setSaveMsg(null);
 
         try {
             const resp = await fetch(`${API_BASE}/analyze`, {
@@ -90,11 +79,18 @@ export default function RepoToPaperPage() {
         eventSourceRef.current = es;
 
         es.addEventListener("progress", (e) => {
-            setStatus(JSON.parse(e.data));
+            const parsed = JSON.parse(e.data);
+            setStatus(parsed);
+            if (parsed.phase === "completed") {
+                loadSections(parsed);
+                es.close();
+            }
         });
 
         es.addEventListener("done", (e) => {
-            setStatus(JSON.parse(e.data));
+            const parsed = JSON.parse(e.data);
+            setStatus(parsed);
+            loadSections(parsed);
             es.close();
         });
 
@@ -104,6 +100,13 @@ export default function RepoToPaperPage() {
         });
     }, []);
 
+    const loadSections = (st: JobStatus) => {
+        const result = st.result as Record<string, unknown> | null;
+        if (result && Array.isArray(result.sections)) {
+            setEditedSections(result.sections as Section[]);
+        }
+    };
+
     const pollStatus = useCallback(async (id: string) => {
         const poll = async () => {
             try {
@@ -111,7 +114,9 @@ export default function RepoToPaperPage() {
                 if (!resp.ok) return;
                 const data: JobStatus = await resp.json();
                 setStatus(data);
-                if (data.phase !== "completed" && data.phase !== "failed") {
+                if (data.phase === "completed") {
+                    loadSections(data);
+                } else if (data.phase !== "failed") {
                     setTimeout(poll, 2000);
                 }
             } catch {
@@ -121,13 +126,45 @@ export default function RepoToPaperPage() {
         poll();
     }, []);
 
-    const toggleSection = (id: string) => {
-        setExpandedSections((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id); else next.add(id);
-            return next;
-        });
+    const updateSectionContent = (sectionId: string, content: string) => {
+        setEditedSections((prev) =>
+            prev.map((s) =>
+                s.section_id === sectionId
+                    ? { ...s, content, word_count: content.split(/\s+/).filter(Boolean).length }
+                    : s
+            )
+        );
+        setSaveMsg(null);
     };
+
+    const handleSave = useCallback(async () => {
+        if (!jobId) return;
+        setSaving(true);
+        setSaveMsg(null);
+
+        try {
+            const resp = await fetch(`${API_BASE}/sections/${jobId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sections: editedSections.map((s) => ({
+                        section_id: s.section_id,
+                        title: s.title,
+                        content: s.content,
+                    })),
+                }),
+            });
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({}));
+                throw new Error(data.detail || "Save failed");
+            }
+            setSaveMsg("Saved & re-exported successfully!");
+        } catch (err) {
+            setSaveMsg(err instanceof Error ? err.message : "Save failed");
+        } finally {
+            setSaving(false);
+        }
+    }, [jobId, editedSections]);
 
     const toggleFormat = (fmt: string) => {
         setOutputFormats((prev) =>
@@ -137,21 +174,19 @@ export default function RepoToPaperPage() {
 
     const isComplete = status?.phase === "completed";
     const isFailed = status?.phase === "failed";
-    const result = status?.result as Record<string, unknown> | null;
-    const sections = (result?.sections as Section[]) || [];
-    const citations = (result?.citations as Citation[]) || [];
     const currentPhaseIdx = PIPELINE_STEPS.findIndex((s) => s.phase === status?.phase);
+    const totalWords = editedSections.reduce((sum, s) => sum + s.word_count, 0);
 
     return (
-        <div>
+        <div className={styles.pageContainer}>
             <div className={`${styles.header} animate-in`}>
                 <div>
-                    <Link href="/code-mapper" style={{ fontSize: "0.8rem", color: "var(--text-muted)", textDecoration: "none" }}>
+                    <Link href="/code-mapper" className={styles.backLink}>
                         &larr; Code Mapper
                     </Link>
-                    <h1>Repo &rarr; Paper</h1>
+                    <h1 className={styles.pageTitle}>Project Report Generator</h1>
                     <p className={styles.subtitle}>
-                        Generate an academic research paper from a GitHub repository.
+                        Generate an editable project report from a GitHub repository.
                     </p>
                 </div>
             </div>
@@ -160,7 +195,7 @@ export default function RepoToPaperPage() {
                 <div className={`${styles.errorBanner} animate-in`}>
                     <span>&#9888;&#65039;</span>
                     <span>{error}</span>
-                    <button className="btn btn-secondary" onClick={() => setError(null)} style={{ marginLeft: "auto", fontSize: "0.78rem" }}>
+                    <button className={styles.btnSecondary} onClick={() => setError(null)}>
                         Dismiss
                     </button>
                 </div>
@@ -177,6 +212,7 @@ export default function RepoToPaperPage() {
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
                             required
+                            id="repo-url-input"
                         />
                     </div>
                     <div className={styles.optionsRow}>
@@ -184,13 +220,14 @@ export default function RepoToPaperPage() {
                             className={styles.selectInput}
                             value={paperStyle}
                             onChange={(e) => setPaperStyle(e.target.value)}
+                            id="paper-style-select"
                         >
                             <option value="generic">Generic</option>
                             <option value="neurips">NeurIPS</option>
                             <option value="icml">ICML</option>
                             <option value="arxiv">arXiv</option>
                         </select>
-                        <label style={{ fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                        <label className={styles.checkboxLabel}>
                             <input
                                 type="checkbox"
                                 checked={outputFormats.includes("latex")}
@@ -198,7 +235,7 @@ export default function RepoToPaperPage() {
                             />
                             LaTeX
                         </label>
-                        <label style={{ fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                        <label className={styles.checkboxLabel}>
                             <input
                                 type="checkbox"
                                 checked={outputFormats.includes("word")}
@@ -206,8 +243,8 @@ export default function RepoToPaperPage() {
                             />
                             Word
                         </label>
-                        <button type="submit" className="btn btn-primary">
-                            Generate Paper
+                        <button type="submit" className={styles.btnPrimary} id="generate-btn">
+                            Generate Report
                         </button>
                     </div>
                 </form>
@@ -216,7 +253,7 @@ export default function RepoToPaperPage() {
             {/* Progress */}
             {status && !isComplete && !isFailed && (
                 <div className={`${styles.progressCard} animate-in`}>
-                    <div className={styles.progressTitle}>Generating paper&hellip;</div>
+                    <div className={styles.progressTitle}>Generating report&hellip;</div>
                     <div className={styles.progressBarOuter}>
                         <div className={styles.progressBarInner} style={{ width: `${status.progress}%` }} />
                     </div>
@@ -242,104 +279,99 @@ export default function RepoToPaperPage() {
                 <div className={`${styles.errorBanner} animate-in`}>
                     <span>&#10060;</span>
                     <span>Pipeline failed: {status?.error || status?.message || "Unknown error"}</span>
-                    <button className="btn btn-primary" onClick={() => { setJobId(null); setStatus(null); }} style={{ marginLeft: "auto", fontSize: "0.78rem" }}>
+                    <button className={styles.btnPrimary} onClick={() => { setJobId(null); setStatus(null); }}>
                         Try again
                     </button>
                 </div>
             )}
 
-            {/* Results */}
-            {isComplete && result && (
-                <div className={styles.resultsArea}>
-                    {/* Paper sections */}
-                    {sections.map((sec) => (
-                        <div key={sec.section_id} className={`${styles.sectionCard} animate-in`}>
-                            <div
-                                className={styles.sectionHeader}
-                                onClick={() => toggleSection(sec.section_id)}
-                            >
-                                <span className={styles.sectionTitle}>
-                                    {expandedSections.has(sec.section_id) ? "▾" : "▸"}{" "}
-                                    {sec.title}
-                                </span>
-                                <span className={styles.wordCount}>
-                                    {sec.word_count} words &middot; {sec.citations.length} citations
-                                </span>
+            {/* Editable Report Editor */}
+            {isComplete && editedSections.length > 0 && (
+                <div className={styles.editorArea}>
+                    <h1 className={styles.documentTitle}>Report AI</h1>
+
+                    {/* Sections */}
+                    {editedSections.map((sec) => (
+                        <div key={sec.section_id} className={styles.sectionEditor}>
+                            <div className={styles.sectionEditorHeader}>
+                                <h2 className={styles.sectionTitle}>{sec.title}</h2>
                             </div>
-                            {expandedSections.has(sec.section_id) && (
-                                <div className={styles.sectionBody}>{sec.content}</div>
-                            )}
+                            <textarea
+                                className={styles.sectionTextarea}
+                                value={sec.content}
+                                onChange={(e) => updateSectionContent(sec.section_id, e.target.value)}
+                                rows={Math.max(6, Math.ceil(sec.content.length / 80))}
+                                id={`section-${sec.section_id}`}
+                            />
                         </div>
                     ))}
 
-                    {/* Citations */}
-                    {citations.length > 0 && (
-                        <div className={styles.citationsPanel}>
-                            <div className={styles.citationsHeader}>
-                                <span className={styles.citationsTitle}>
-                                    References ({citations.length})
-                                </span>
-                            </div>
-                            <div className={styles.citationsList}>
-                                {citations.map((c) => (
-                                    <div key={c.cite_key} className={styles.citationItem}>
-                                        <span className={styles.citeKey}>[{c.cite_key}]</span>
-                                        <span className={styles.citeInfo}>
-                                            {c.authors.slice(0, 3).join(", ")}
-                                            {c.authors.length > 3 && " et al."}
-                                            {" "}&mdash; <em>{c.title}</em>
-                                            {c.venue && `. ${c.venue}`}
-                                            {c.year > 0 && ` (${c.year})`}
-                                        </span>
-                                        <span className={`${styles.verifiedBadge} ${c.verified ? styles.verified : styles.unverified}`}>
-                                            {c.verified ? `✓ ${c.verification_layers.length} layers` : "unverified"}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* Bottom Panel */}
+                    <div className={styles.bottomPanel}>
+                        <div className={styles.bottomPanelLeft}>
+                            {/* Removed Autocomplete and Cite as requested */}
                         </div>
-                    )}
-
-                    {/* Download bar */}
-                    <div className={styles.downloadBar}>
-                        {outputFormats.includes("latex") && (
-                            <a
-                                href={`${API_BASE}/download/${jobId}?format=latex`}
-                                className="btn btn-primary"
-                                download
+                        <div className={styles.bottomPanelCenter}>
+                            <button className={styles.toolbarIconBtn} title="Format Text"><b>T</b> Text</button>
+                            <div className={styles.toolbarDivider} />
+                            <button className={styles.toolbarIconBtn} title="Image">🖼️</button>
+                            <button className={styles.toolbarIconBtn} title="Code">&lt;&gt;</button>
+                            <button className={styles.toolbarIconBtn} title="Task List">[x]</button>
+                            <button className={styles.toolbarIconBtn} title="Math">Σ</button>
+                            <div className={styles.toolbarDivider} />
+                            <button className={styles.toolbarIconBtn} title="Undo">↩</button>
+                            <button className={styles.toolbarIconBtn} title="Redo">↪</button>
+                        </div>
+                        <div className={styles.bottomPanelRight}>
+                            <span className={styles.wordCountBadge}>{totalWords} words</span>
+                            {saveMsg && (
+                                <span style={{ color: '#4A56E2', marginLeft: '0.5rem' }}>{saveMsg}</span>
+                            )}
+                            {outputFormats.includes("word") && (
+                                <a
+                                    href={`${API_BASE}/download/${jobId}?format=word`}
+                                    className={styles.secondaryActionBtn}
+                                    download
+                                    id="download-word-btn"
+                                    style={{ marginLeft: '0.5rem' }}
+                                >
+                                    📥 Word
+                                </a>
+                            )}
+                            {outputFormats.includes("latex") && (
+                                <a
+                                    href={`${API_BASE}/download/${jobId}?format=latex`}
+                                    className={styles.secondaryActionBtn}
+                                    download
+                                    id="download-latex-btn"
+                                    style={{ marginLeft: '0.5rem' }}
+                                >
+                                    📥 LaTeX
+                                </a>
+                            )}
+                            <button
+                                className={styles.primaryActionBtn}
+                                onClick={handleSave}
+                                disabled={saving}
+                                id="save-btn"
+                                style={{ marginLeft: '0.5rem' }}
                             >
-                                &#11015; Download LaTeX
-                            </a>
-                        )}
-                        {outputFormats.includes("word") && (
-                            <a
-                                href={`${API_BASE}/download/${jobId}?format=word`}
-                                className="btn btn-primary"
-                                download
-                            >
-                                &#11015; Download Word
-                            </a>
-                        )}
-                        <button
-                            className="btn btn-secondary"
-                            onClick={() => { setJobId(null); setStatus(null); setExpandedSections(new Set()); }}
-                        >
-                            Analyze another repo
-                        </button>
+                                {saving ? "Saving…" : "Save Changes"}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* Initial state */}
             {!jobId && !error && (
-                <div className="empty-state animate-in" style={{ marginTop: "var(--space-xl)" }}>
-                    <div className="empty-state-icon">&#128218;</div>
+                <div className={styles.emptyState}>
+                    <div className={styles.emptyIcon}>📄</div>
                     <h3>How it works</h3>
                     <p>
                         1. Enter a GitHub URL &rarr; 2. AI analyzes the repo &rarr;
-                        3. Literature search + citation verification &rarr;
-                        4. Section-by-section paper writing with 2-pass refinement &rarr;
-                        5. Export as LaTeX and/or Word
+                        3. Report generated with editable sections &rarr;
+                        4. Edit in-place, then download as LaTeX / Word
                     </p>
                 </div>
             )}
