@@ -15,13 +15,10 @@ const navItems = [
     { href: "/planner", label: "Planner", icon: "📅" },
     { href: "/summarizer", label: "Summarizer", icon: "🧠" },
     { href: "/code-mapper", label: "Code Mapper", icon: "🔗" },
+    { href: "/citation-manager", label: "Citations", icon: "📚" },
     { href: "/plagiarism-check", label: "Plagiarism", icon: "🛡️" },
 ];
 
-
-const moduleItems = [
-    { label: "Citations", icon: "📚", disabled: true },
-];
 
 function applySidebarWidth(collapsed: boolean) {
     const w = collapsed ? "var(--sidebar-width-collapsed)" : "240px";
@@ -112,21 +109,6 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            {/* Modules (Coming Soon) */}
-            <div className={styles.nav}>
-                <span className={styles.navLabel}>Modules</span>
-                {moduleItems.map((item) => (
-                    <div
-                        key={item.label}
-                        className={`${styles.navItem} ${styles.disabled}`}
-                        title={collapsed ? `${item.label} (coming soon)` : undefined}
-                    >
-                        <span className={styles.navIcon}>{item.icon}</span>
-                        <span className={styles.navText}>{item.label}</span>
-                        <span className={styles.badge}>Soon</span>
-                    </div>
-                ))}
-            </div>
 
             {/* Footer */}
             <div className={styles.footer}>

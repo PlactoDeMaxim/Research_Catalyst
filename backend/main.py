@@ -27,6 +27,7 @@ _BACKEND_DIR = Path(__file__).resolve().parent
 load_dotenv(_BACKEND_DIR / ".env", override=False)
 load_dotenv(_BACKEND_DIR.parent / ".env", override=False)
 from modules.plagiarism_check.routes.plagiarism_routes import router as plagiarism_router
+from modules.citation_manager.routes.citation_manager_routes import router as citation_manager_router
 
 app = FastAPI(
     title="Research Catalyst Backend",
@@ -60,6 +61,7 @@ app.include_router(summary_router, prefix="/api/summary")
 app.include_router(paper_editor_router, prefix="/api/paper-editor")
 app.include_router(code_mapper_router, prefix="/api/code-mapper")
 app.include_router(plagiarism_router, prefix="/api/plagiarism-check")
+app.include_router(citation_manager_router, prefix="/api/citation-manager")
 
 
 @app.get("/health")
