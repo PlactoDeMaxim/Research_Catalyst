@@ -6,6 +6,7 @@ Returns Atom XML which we parse with xml.etree.
 """
 
 import xml.etree.ElementTree as ET
+import re
 import httpx
 from modules.paper_search.models.paper_model import Paper
 
@@ -39,8 +40,9 @@ async def search(
     max_results: int = 25,
 ) -> list[Paper]:
     """Search the arXiv API for papers matching `query`."""
+    safe_query = _sanitize_arxiv_query(query)
     params = {
-        "search_query": f"all:{query}",
+        "search_query": f'all:"{safe_query}"',
         "start": 0,
         "max_results": max_results,
         "sortBy": "relevance",
@@ -115,3 +117,27 @@ async def search(
         print(f"[arXiv] Error: {exc}")
 
     return papers
+
+
+def _sanitize_arxiv_query(query: str) -> str:
+    """Sanitize free-form/markdown-heavy text into arXiv-safe query terms."""
+    q = (query or "").strip()
+    if not q:
+        return "machine learning"
+
+    # Convert markdown links [text](url) -> text.
+    q = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", q)
+    # Remove URLs.
+    q = re.sub(r"https?://\S+", " ", q)
+    # Remove markdown code ticks and common punctuation noise.
+    q = q.replace("`", " ")
+    q = re.sub(r"[{}\[\]<>|^~]", " ", q)
+    # Keep only word-ish chars and separators.
+    q = re.sub(r"[^a-zA-Z0-9_\-\s]", " ", q)
+    # Collapse repeated whitespace.
+    q = re.sub(r"\s+", " ", q).strip()
+
+    if not q:
+        return "machine learning"
+    # Keep query compact to avoid 400s on very long README content.
+    return q[:180]

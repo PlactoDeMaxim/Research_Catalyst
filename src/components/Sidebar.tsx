@@ -13,12 +13,11 @@ const navItems = [
     { href: "/editor-v2", label: "Paper Editor", icon: "📝" },
     { href: "/visualize", label: "Visualize", icon: "📈" },
     { href: "/planner", label: "Planner", icon: "📅" },
-    { href: "/summarizer", label: "Summary", icon: "🧠" },
+    { href: "/summarizer", label: "Summarizer", icon: "🧠" },
+    { href: "/code-mapper", label: "Code Mapper", icon: "🔗" },
 ];
 
 const moduleItems = [
-    { label: "Summarizer", icon: "📋", disabled: true },
-    { label: "Code Mapper", icon: "🔗", disabled: true },
     { label: "Plagiarism", icon: "🛡️", disabled: true },
     { label: "Citations", icon: "📚", disabled: true },
 ];
@@ -90,21 +89,26 @@ export default function Sidebar() {
             {/* Main Navigation */}
             <nav id="sidebar-main-nav" className={styles.nav}>
                 <span className={styles.navLabel}>Main</span>
-                {navItems.map((item) => (
-                    <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`${styles.navItem} ${pathname === item.href ? styles.active : ""
-                            }`}
-                        title={collapsed ? item.label : undefined}
-                    >
-                        <span className={styles.navIcon}>{item.icon}</span>
-                        <span className={styles.navText}>{item.label}</span>
-                        {pathname === item.href && (
-                            <span className={styles.activeIndicator} />
-                        )}
-                    </Link>
-                ))}
+                {navItems.map((item) => {
+                    const isActive =
+                        item.href === "/"
+                            ? pathname === "/"
+                            : pathname === item.href || pathname.startsWith(item.href + "/");
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`${styles.navItem} ${isActive ? styles.active : ""}`}
+                            title={collapsed ? item.label : undefined}
+                        >
+                            <span className={styles.navIcon}>{item.icon}</span>
+                            <span className={styles.navText}>{item.label}</span>
+                            {isActive && (
+                                <span className={styles.activeIndicator} />
+                            )}
+                        </Link>
+                    );
+                })}
             </nav>
 
             {/* Modules (Coming Soon) */}

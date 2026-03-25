@@ -1,0 +1,71 @@
+# ML Project Scaffold Template
+# Used as a reference for code blueprint generation
+
+structure:
+  - path: "config.yaml"
+    description: "Hyperparameters and experiment configuration"
+    category: "config"
+
+  - path: "data/dataset.py"
+    description: "Dataset class with preprocessing and augmentation"
+    category: "data"
+    dependencies: []
+
+  - path: "data/transforms.py"
+    description: "Data transformations and augmentation pipelines"
+    category: "data"
+    dependencies: []
+
+  - path: "models/model.py"
+    description: "Main model architecture definition"
+    category: "model"
+    dependencies: []
+
+  - path: "models/layers.py"
+    description: "Custom layers and building blocks"
+    category: "model"
+    dependencies: []
+
+  - path: "models/losses.py"
+    description: "Loss functions"
+    category: "model"
+    dependencies: []
+
+  - path: "utils/metrics.py"
+    description: "Evaluation metrics"
+    category: "utils"
+    dependencies: []
+
+  - path: "utils/logging.py"
+    description: "Training logger and checkpoint utilities"
+    category: "utils"
+    dependencies: []
+
+  - path: "train.py"
+    description: "Training loop with validation"
+    category: "entry"
+    dependencies:
+      - "config.yaml"
+      - "data/dataset.py"
+      - "models/model.py"
+      - "models/losses.py"
+      - "utils/metrics.py"
+      - "utils/logging.py"
+
+  - path: "evaluate.py"
+    description: "Evaluation and inference script"
+    category: "entry"
+    dependencies:
+      - "config.yaml"
+      - "data/dataset.py"
+      - "models/model.py"
+      - "utils/metrics.py"
+
+default_packages:
+  - torch
+  - torchvision
+  - numpy
+  - pyyaml
+  - tqdm
+  - matplotlib
+  - tensorboard

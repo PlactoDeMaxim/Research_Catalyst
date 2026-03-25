@@ -9,6 +9,8 @@ Run with:  uvicorn main:app --reload --port 8000
 """
 
 import os
+from dotenv import load_dotenv
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +20,12 @@ from modules.visualization.routes.visualization_routes import router as viz_rout
 from modules.planner.routes.planner_routes import router as planner_router
 from modules.summary.routes.summary_routes import router as summary_router
 from modules.paper_editor.routes.paper_editor_routes import router as paper_editor_router
+from modules.code_mapper.routes.code_mapper_routes import router as code_mapper_router
+
+# Load env vars from backend/.env first, then project-root .env as fallback.
+_BACKEND_DIR = Path(__file__).resolve().parent
+load_dotenv(_BACKEND_DIR / ".env", override=False)
+load_dotenv(_BACKEND_DIR.parent / ".env", override=False)
 
 app = FastAPI(
     title="Research Catalyst Backend",
@@ -49,6 +57,7 @@ app.include_router(viz_router, prefix="/api/visualization")
 app.include_router(planner_router, prefix="/api/planner")
 app.include_router(summary_router, prefix="/api/summary")
 app.include_router(paper_editor_router, prefix="/api/paper-editor")
+app.include_router(code_mapper_router, prefix="/api/code-mapper")
 
 
 @app.get("/health")

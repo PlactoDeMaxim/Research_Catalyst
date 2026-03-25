@@ -57,6 +57,7 @@ export default function Dashboard() {
                     { icon: "📝", label: "Paper Editor", href: "/editor" },
                     { icon: "📈", label: "Visualization", href: "/visualize" },
                     { icon: "📅", label: "Research Planner", href: "/planner" },
+                    { icon: "🔗", label: "Code Mapper", href: "/code-mapper" },
                 ].map((item) => (
                     <Link
                         key={item.href}

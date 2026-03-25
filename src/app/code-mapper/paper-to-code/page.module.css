@@ -1,0 +1,228 @@
+/* ═══════════ Paper-to-Code Page ═══════════ */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-xl);
+}
+
+.header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 2px; }
+.subtitle { color: var(--text-secondary); font-size: 0.9rem; }
+
+/* Upload zone */
+.uploadZone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3xl) var(--space-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    background: var(--bg-card);
+    margin-bottom: var(--space-xl);
+}
+
+.uploadZone:hover,
+.uploadZoneDragOver {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary-light);
+}
+
+.uploadIcon { font-size: 2.5rem; margin-bottom: var(--space-sm); }
+.uploadTitle { font-size: 1rem; font-weight: 600; margin-bottom: var(--space-xs); }
+.uploadHint { font-size: 0.82rem; color: var(--text-muted); }
+.uploadInput { display: none; }
+
+/* Progress tracker */
+.progressCard {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.progressTitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+}
+
+.progressBarOuter {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-muted);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-sm);
+}
+
+.progressBarInner {
+    height: 100%;
+    background: var(--accent-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.4s ease;
+}
+
+.progressMessage {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.progressSteps {
+    display: flex;
+    gap: var(--space-xs);
+    margin-top: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 500;
+    background: var(--bg-muted);
+    color: var(--text-muted);
+}
+
+.stepActive {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.stepDone {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Results */
+.resultsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+}
+
+.resultPanel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.panelHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-muted);
+}
+
+.panelTitle {
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.panelBody {
+    padding: var(--space-lg);
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Methodology display */
+.methodSection {
+    margin-bottom: var(--space-lg);
+}
+
+.methodLabel {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-xs);
+}
+
+.methodValue {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.55;
+}
+
+/* File tree */
+.fileTree {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+}
+
+.fileEntry {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 4px 0;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    padding-left: var(--space-sm);
+    transition: background var(--transition-fast);
+}
+
+.fileEntry:hover {
+    background: var(--bg-muted);
+}
+
+.fileEntryActive {
+    background: var(--accent-primary-light);
+}
+
+.fileIcon { font-size: 0.85rem; }
+.fileName { flex: 1; }
+
+.validBadge {
+    font-size: 0.68rem;
+    padding: 1px 6px;
+    border-radius: var(--radius-full);
+}
+
+.validPass { background: #e8f5e9; color: #2e7d32; }
+.validFail { background: #fce4ec; color: #c62828; }
+
+/* Code preview */
+.codePreview {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text-primary);
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+/* Download bar */
+.downloadBar {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-xl) 0;
+}
+
+/* Error */
+.errorBanner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: #fce4ec;
+    border: 1px solid #f8bbd0;
+    border-radius: var(--radius-md);
+    color: #c62828;
+    font-size: 0.85rem;
+    margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 900px) {
+    .resultsGrid { grid-template-columns: 1fr; }
+}
