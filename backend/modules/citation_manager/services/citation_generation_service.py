@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
 import re
 from html import unescape
 from urllib.parse import urlparse
@@ -14,9 +15,10 @@ from modules.citation_manager.models.citation_manager_models import (
 )
 
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "gemma3:4b"
-OLLAMA_TIMEOUT = 120
+OLLAMA_TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT", "120"))
+# Local dev (no OLLAMA_API_KEY): classic Ollama HTTP API
+OLLAMA_LOCAL_BASE = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").strip().rstrip("/")
+OLLAMA_LOCAL_MODEL = os.getenv("OLLAMA_LOCAL_MODEL", "gemma3:4b").strip()
 REQUEST_TIMEOUT = 20
 USER_AGENT = "ResearchCatalyst/0.1 CitationManager"
 SUPPORTED_FORMATS = {"APA", "MLA", "IEEE", "Chicago"}
@@ -274,20 +276,57 @@ def _extract_json_object(raw: str) -> dict:
         return {}
 
 
+def _ollama_cloud_settings() -> dict[str, str]:
+    """Same env contract as `modules.code_mapper.services.llm_client` (Ollama Cloud)."""
+    return {
+        "api_key": os.getenv("OLLAMA_API_KEY", "").strip(),
+        "base_url": os.getenv("OLLAMA_BASE_URL", "https://ollama.com").strip().rstrip("/"),
+        "model": os.getenv("OLLAMA_MODEL", "gpt-oss:120b-cloud").strip(),
+    }
+
+
 def _generate_with_ollama(metadata: CitationMetadata, citation_format: str) -> tuple[str, str]:
-    response = requests.post(
-        OLLAMA_URL,
-        json={
-            "model": OLLAMA_MODEL,
-            "prompt": _build_prompt(metadata, citation_format),
+    prompt = _build_prompt(metadata, citation_format)
+    cfg = _ollama_cloud_settings()
+
+    if cfg["api_key"]:
+        # Ollama Cloud: POST /api/chat + Bearer token (not localhost /api/generate).
+        url = f"{cfg['base_url']}/api/chat"
+        headers = {
+            "Authorization": f"Bearer {cfg['api_key']}",
+            "Content-Type": "application/json",
+        }
+        payload: dict = {
+            "model": cfg["model"],
+            "messages": [{"role": "user", "content": prompt}],
             "stream": False,
             "format": "json",
-        },
-        timeout=OLLAMA_TIMEOUT,
-    )
-    response.raise_for_status()
-    payload = response.json()
-    data = _extract_json_object(str(payload.get("response", "")))
+            "options": {
+                "temperature": float(os.getenv("LLM_TEMPERATURE", "0.3")),
+                "num_predict": int(os.getenv("CITATION_OLLAMA_NUM_PREDICT", "2048")),
+            },
+        }
+        response = requests.post(url, json=payload, headers=headers, timeout=OLLAMA_TIMEOUT)
+        response.raise_for_status()
+        body = response.json()
+        raw_text = str(body.get("message", {}).get("content", "") or "")
+    else:
+        # Local Ollama: /api/generate with prompt (requires `ollama serve` on this machine).
+        response = requests.post(
+            f"{OLLAMA_LOCAL_BASE}/api/generate",
+            json={
+                "model": OLLAMA_LOCAL_MODEL,
+                "prompt": prompt,
+                "stream": False,
+                "format": "json",
+            },
+            timeout=OLLAMA_TIMEOUT,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        raw_text = str(payload.get("response", "") or "")
+
+    data = _extract_json_object(raw_text)
     citation_text = _normalize_whitespace(
         str(
             data.get("citation_text")

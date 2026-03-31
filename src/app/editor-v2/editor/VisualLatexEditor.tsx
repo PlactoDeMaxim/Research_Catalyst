@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { parseVisualDocument, serializeVisualDocument, type VisualBlock } from "./visualModel";
 import styles from "../editor-v2.module.css";
 
@@ -9,18 +9,66 @@ type VisualLatexEditorProps = {
     onChange: (nextTex: string) => void;
 };
 
+/**
+ * contentEditable + React children {text} re-renders reset the DOM every keystroke, which
+ * causes caret jumps and "backwards" typing. We keep text in refs and only push to the DOM
+ * when the block is not focused or when the source changes from outside (e.g. Code tab).
+ */
+function RichBlock({
+    block,
+    className,
+    tag: Tag,
+    onUpdate,
+    onRegisterFocus,
+}: {
+    block: VisualBlock;
+    className: string;
+    tag: "h1" | "h2" | "h3" | "p";
+    onUpdate: (id: string, text: string) => void;
+    onRegisterFocus: (el: HTMLElement | null) => void;
+}) {
+    const elRef = useRef<HTMLElement | null>(null);
+
+    useLayoutEffect(() => {
+        const el = elRef.current;
+        if (!el) return;
+        if (document.activeElement === el) return;
+        const next = block.text;
+        if (el.textContent !== next) {
+            el.textContent = next;
+        }
+    }, [block.text, block.id]);
+
+    return (
+        <Tag
+            ref={elRef as React.RefObject<HTMLHeadingElement & HTMLParagraphElement>}
+            className={className}
+            contentEditable
+            suppressContentEditableWarning
+            dir="ltr"
+            spellCheck
+            onFocus={(e) => {
+                onRegisterFocus(e.currentTarget);
+            }}
+            onBlur={() => {
+                onRegisterFocus(null);
+            }}
+            onInput={(e) => onUpdate(block.id, e.currentTarget.textContent ?? "")}
+        />
+    );
+}
+
 export default function VisualLatexEditor({ value, onChange }: VisualLatexEditorProps) {
     const parsed = useMemo(() => parseVisualDocument(value), [value]);
-    const [blocks, setBlocks] = useState<VisualBlock[]>(parsed.blocks);
+    const [blocks, setBlocks] = useState<VisualBlock[]>(() => parsed.blocks);
     const [showRawBlocks, setShowRawBlocks] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const idRef = useRef(0);
     const focusRef = useRef<HTMLElement | null>(null);
-
-    useEffect(() => {
-        const t = window.setTimeout(() => setBlocks(parsed.blocks), 0);
-        return () => window.clearTimeout(t);
-    }, [parsed.blocks]);
+    /** Last full TeX emitted from this editor — skip re-parsing our own round-trips. */
+    const lastEmittedTexRef = useRef<string | null>(null);
+    /** TeX we last applied into `blocks` from props (external / initial). */
+    const lastSyncedValueRef = useRef<string>(value);
 
     useEffect(
         () => () => {
@@ -29,13 +77,34 @@ export default function VisualLatexEditor({ value, onChange }: VisualLatexEditor
         []
     );
 
-    const commit = (nextBlocks: VisualBlock[]) => {
-        setBlocks(nextBlocks);
-        if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => {
-            onChange(serializeVisualDocument({ ...parsed, blocks: nextBlocks }));
-        }, 220);
-    };
+    // Only replace blocks when `value` changed from outside (Code tab, template, file switch),
+    // not on every visual edit (which would fight contentEditable and scramble caret / order).
+    useEffect(() => {
+        if (value === lastEmittedTexRef.current) {
+            return;
+        }
+        if (value === lastSyncedValueRef.current) {
+            return;
+        }
+        lastSyncedValueRef.current = value;
+        lastEmittedTexRef.current = null;
+        setBlocks(parseVisualDocument(value).blocks);
+    }, [value]);
+
+    const commit = useCallback(
+        (nextBlocks: VisualBlock[]) => {
+            setBlocks(nextBlocks);
+            if (timerRef.current) clearTimeout(timerRef.current);
+            timerRef.current = setTimeout(() => {
+                const doc = { ...parsed, blocks: nextBlocks };
+                const tex = serializeVisualDocument(doc);
+                lastEmittedTexRef.current = tex;
+                lastSyncedValueRef.current = tex;
+                onChange(tex);
+            }, 220);
+        },
+        [onChange, parsed]
+    );
 
     const updateText = (id: string, text: string) => {
         commit(blocks.map((b) => (b.id === id ? { ...b, text } : b)));
@@ -63,7 +132,7 @@ export default function VisualLatexEditor({ value, onChange }: VisualLatexEditor
     const rawBlocks = blocks.filter((b) => b.kind === "raw");
 
     return (
-        <div className={styles.visualRoot}>
+        <div className={styles.visualRoot} dir="ltr">
             <div className={styles.visualToolbar}>
                 <div className={styles.visualToolbarTitleWrap}>
                     <span className={styles.visualToolbarTitle}>Visual Editor</span>
@@ -105,7 +174,7 @@ export default function VisualLatexEditor({ value, onChange }: VisualLatexEditor
                 <span className={styles.visualFormatHint}>Code tab keeps full LaTeX control</span>
             </div>
             <div className={styles.visualScroll}>
-                <div className={styles.visualPage}>
+                <div className={styles.visualPage} dir="ltr">
                     <div className={styles.visualDocHeader}>
                         <span className={styles.visualDocPath}>main.tex</span>
                         <span className={styles.visualDocDivider}>/</span>
@@ -114,80 +183,68 @@ export default function VisualLatexEditor({ value, onChange }: VisualLatexEditor
                     {visibleBlocks.map((b) => (
                         <div key={b.id} className={styles.visualNode}>
                             {b.kind === "title" ? (
-                                <h1
+                                <RichBlock
+                                    block={b}
+                                    tag="h1"
                                     className={`${styles.visualRichBlock} ${styles.visualRichTitle}`}
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    onFocus={(e) => {
-                                        focusRef.current = e.currentTarget;
+                                    onUpdate={updateText}
+                                    onRegisterFocus={(el) => {
+                                        focusRef.current = el;
                                     }}
-                                    onInput={(e) => updateText(b.id, e.currentTarget.textContent ?? "")}
-                                >
-                                    {b.text}
-                                </h1>
+                                />
                             ) : b.kind === "authors" ? (
-                                <p
+                                <RichBlock
+                                    block={b}
+                                    tag="p"
                                     className={`${styles.visualRichBlock} ${styles.visualRichAuthors}`}
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    onFocus={(e) => {
-                                        focusRef.current = e.currentTarget;
+                                    onUpdate={updateText}
+                                    onRegisterFocus={(el) => {
+                                        focusRef.current = el;
                                     }}
-                                    onInput={(e) => updateText(b.id, e.currentTarget.textContent ?? "")}
-                                >
-                                    {b.text}
-                                </p>
+                                />
                             ) : b.kind === "section" ? (
-                                <h2
+                                <RichBlock
+                                    block={b}
+                                    tag="h2"
                                     className={`${styles.visualRichBlock} ${styles.visualRichSection}`}
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    onFocus={(e) => {
-                                        focusRef.current = e.currentTarget;
+                                    onUpdate={updateText}
+                                    onRegisterFocus={(el) => {
+                                        focusRef.current = el;
                                     }}
-                                    onInput={(e) => updateText(b.id, e.currentTarget.textContent ?? "")}
-                                >
-                                    {b.text}
-                                </h2>
+                                />
                             ) : b.kind === "subsection" ? (
-                                <h3
+                                <RichBlock
+                                    block={b}
+                                    tag="h3"
                                     className={`${styles.visualRichBlock} ${styles.visualRichSubsection}`}
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    onFocus={(e) => {
-                                        focusRef.current = e.currentTarget;
+                                    onUpdate={updateText}
+                                    onRegisterFocus={(el) => {
+                                        focusRef.current = el;
                                     }}
-                                    onInput={(e) => updateText(b.id, e.currentTarget.textContent ?? "")}
-                                >
-                                    {b.text}
-                                </h3>
+                                />
                             ) : b.kind === "abstract" ? (
                                 <>
                                     <div className={styles.visualAbstractHeading}>Abstract</div>
-                                    <p
+                                    <RichBlock
+                                        block={b}
+                                        tag="p"
                                         className={`${styles.visualRichBlock} ${styles.visualRichParagraph}`}
-                                        contentEditable
-                                        suppressContentEditableWarning
-                                        onFocus={(e) => {
-                                            focusRef.current = e.currentTarget;
+                                        onUpdate={updateText}
+                                        onRegisterFocus={(el) => {
+                                            focusRef.current = el;
                                         }}
-                                        onInput={(e) => updateText(b.id, e.currentTarget.textContent ?? "")}
-                                    >
-                                        {b.text}
-                                    </p>
+                                    />
                                 </>
                             ) : (
-                                <p
+                                <RichBlock
+                                    block={b}
+                                    tag="p"
                                     className={`${styles.visualRichBlock} ${styles.visualRichParagraph}`}
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    onFocus={(e) => {
-                                        focusRef.current = e.currentTarget;
+                                    onUpdate={updateText}
+                                    onRegisterFocus={(el) => {
+                                        focusRef.current = el;
                                     }}
-                                    onInput={(e) => updateText(b.id, e.currentTarget.textContent ?? "")}
-                                >
-                                    {b.text}
-                                </p>
+                                />
                             )}
                         </div>
                     ))}

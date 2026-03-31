@@ -238,6 +238,9 @@
 .rightPane {
     background: #ffffff;
     border-left: 1px solid #dce3ee;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
 }
 
 .statusBar {
@@ -275,11 +278,10 @@
     overflow: hidden;
 }
 
+/* Single scroll surface: CodeMirror .cm-scroller. Avoid overflow-y here or scroll feels sticky / double-nested. */
 .editorMain {
     min-height: 0;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    scrollbar-gutter: stable both-edges;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     overscroll-behavior: contain;
@@ -296,6 +298,8 @@
     display: flex;
     flex-direction: column;
     background: #ffffff;
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .visualToolbar {
@@ -403,6 +407,8 @@
     border-radius: 1px;
     box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
     padding: 0.62rem 1rem 1.2rem;
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .visualDocHeader {
@@ -791,10 +797,11 @@
 }
 
 .previewRoot {
-    height: 100%;
+    height: auto;
     display: flex;
     flex-direction: column;
     min-height: 0;
+    flex: 1 1 auto;
 }
 
 .previewHeader {
@@ -918,6 +925,148 @@
     margin: 0;
     white-space: pre-wrap;
     font-size: 0.66rem;
+}
+
+.writingAssistantRoot {
+    border-top: 1px solid #dce3ee;
+    padding: 0.55rem 0.65rem;
+    background: #f8fbff;
+    display: grid;
+    gap: 0.55rem;
+    max-height: 360px;
+    overflow: auto;
+}
+
+.writingAssistantHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.writingAssistantTitle {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.writingAssistantMeta {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.writingAssistantControls {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.writingAssistantInput {
+    width: 100%;
+    border: 1px solid #d2dbe8;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #0f172a;
+    padding: 0.38rem 0.5rem;
+    font-size: 0.74rem;
+}
+
+.writingAssistantTextarea {
+    width: 100%;
+    min-height: 66px;
+    border: 1px solid #d2dbe8;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #0f172a;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.74rem;
+    resize: vertical;
+}
+
+.writingAssistantActionRow {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.writingAssistantError {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.73rem;
+}
+
+.writingAssistantPanels {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.writingAssistantPanel {
+    border: 1px solid #d9e2ef;
+    border-radius: 7px;
+    padding: 0.45rem 0.55rem;
+    background: #ffffff;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.writingAssistantPanel h4 {
+    margin: 0;
+    font-size: 0.76rem;
+}
+
+.writingAssistantPre {
+    margin: 0;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.35rem 0.45rem;
+}
+
+.writingAssistantList {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.writingAssistantSuggestion {
+    border: 1px solid #dbe4f0;
+    border-radius: 6px;
+    background: #f8fbff;
+    color: #0f172a;
+    padding: 0.32rem 0.45rem;
+    text-align: left;
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+.writingAssistantRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.32rem 0.42rem;
+}
+
+.writingAssistantRowBlock {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.34rem 0.42rem;
+    display: grid;
+    gap: 0.18rem;
+    font-size: 0.72rem;
+}
+
+.writingAssistantUl {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.2rem;
+    font-size: 0.73rem;
 }
 
 .visualRawBlock {

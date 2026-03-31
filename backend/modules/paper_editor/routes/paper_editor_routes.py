@@ -23,11 +23,30 @@ from modules.paper_editor.models.paper_editor_models import (
     StructureUpdateResponse,
     UploadTemplateResponse,
 )
+from modules.paper_editor.models.writing_assistant_models import (
+    AutocompleteRequest,
+    AutocompleteResponse,
+    CitationRecommendationRequest,
+    CitationRecommendationResponse,
+    ClaimTraceRequest,
+    ClaimTraceResponse,
+    ComplianceCheckRequest,
+    ComplianceCheckResponse,
+    GroundedDraftRequest,
+    GroundedDraftResponse,
+    ManuscriptReviewRequest,
+    ManuscriptReviewResponse,
+    ReviewerResponsePlan,
+    ReviewerResponseRequest,
+    WritingAssistRequest,
+    WritingAssistResponse,
+)
 from modules.paper_editor.services.compile_service import enqueue_compile_job, get_compile_preflight
 from modules.paper_editor.services.generation_service import (
     generate_section_content,
     refine_section_content,
 )
+from modules.paper_editor.services import writing_assistant_service
 from modules.paper_editor.services.injection_service import inject_into_template
 from modules.paper_editor.services.job_store import get_job
 from modules.paper_editor.services.structure_service import (
@@ -226,4 +245,94 @@ async def download_job_artifact(job_id: str, download: bool = False):
         media_type="application/x-tex",
         filename=path.name,
         content_disposition_type="attachment",
+    )
+
+
+@router.post("/v2/grounded-draft", response_model=GroundedDraftResponse)
+async def grounded_draft(req: GroundedDraftRequest):
+    return GroundedDraftResponse(
+        **writing_assistant_service.generate_grounded_draft(
+            req.section_title,
+            req.prompt,
+            req.current_text,
+            req.evidence,
+            req.citations,
+        )
+    )
+
+
+@router.post("/v2/autocomplete", response_model=AutocompleteResponse)
+async def autocomplete(req: AutocompleteRequest):
+    return AutocompleteResponse(
+        suggestions=writing_assistant_service.generate_autocomplete(
+            req.prefix_text,
+            req.section_title,
+            req.evidence,
+        )
+    )
+
+
+@router.post("/v2/citation-recommendations", response_model=CitationRecommendationResponse)
+async def citation_recommendations(req: CitationRecommendationRequest):
+    return CitationRecommendationResponse(
+        recommendations=writing_assistant_service.recommend_citations(
+            req.text,
+            req.bibliography_entries,
+            req.evidence,
+        )
+    )
+
+
+@router.post("/v2/claim-trace", response_model=ClaimTraceResponse)
+async def claim_trace(req: ClaimTraceRequest):
+    return ClaimTraceResponse(
+        traces=writing_assistant_service.trace_claims(
+            req.text,
+            req.evidence,
+        )
+    )
+
+
+@router.post("/v2/manuscript-review", response_model=ManuscriptReviewResponse)
+async def manuscript_review(req: ManuscriptReviewRequest):
+    return ManuscriptReviewResponse(
+        **writing_assistant_service.review_manuscript(req.title, req.abstract, req.sections)
+    )
+
+
+@router.post("/v2/reviewer-response", response_model=ReviewerResponsePlan)
+async def reviewer_response(req: ReviewerResponseRequest):
+    return ReviewerResponsePlan(
+        responses=writing_assistant_service.build_reviewer_responses(
+            req.reviewer_comments,
+            req.manuscript_context,
+        )
+    )
+
+
+@router.post("/v2/compliance-check", response_model=ComplianceCheckResponse)
+async def compliance_check(req: ComplianceCheckRequest):
+    return ComplianceCheckResponse(
+        **writing_assistant_service.check_compliance(
+            req.venue,
+            req.required_sections,
+            req.manuscript,
+        )
+    )
+
+
+@router.post("/v2/assist", response_model=WritingAssistResponse)
+async def assist_writer(req: WritingAssistRequest):
+    return WritingAssistResponse(
+        **writing_assistant_service.assist_writer(
+            section_title=req.section_title,
+            goal=req.goal,
+            current_text=req.current_text,
+            evidence=req.evidence,
+            bibliography_entries=req.bibliography_entries,
+            reviewer_comments=req.reviewer_comments,
+            venue=req.venue,
+            required_sections=req.required_sections,
+            all_sections=req.all_sections,
+        )
     )

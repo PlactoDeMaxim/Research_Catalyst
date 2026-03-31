@@ -21,6 +21,8 @@ from modules.planner.routes.planner_routes import router as planner_router
 from modules.summary.routes.summary_routes import router as summary_router
 from modules.paper_editor.routes.paper_editor_routes import router as paper_editor_router
 from modules.code_mapper.routes.code_mapper_routes import router as code_mapper_router
+from modules.core.routes.core_routes import router as core_router
+from modules.multi_research.routes.multi_research_routes import router as multi_research_router
 
 # Load env vars from backend/.env first, then project-root .env as fallback.
 _BACKEND_DIR = Path(__file__).resolve().parent
@@ -62,6 +64,8 @@ app.include_router(paper_editor_router, prefix="/api/paper-editor")
 app.include_router(code_mapper_router, prefix="/api/code-mapper")
 app.include_router(plagiarism_router, prefix="/api/plagiarism-check")
 app.include_router(citation_manager_router, prefix="/api/citation-manager")
+app.include_router(core_router, prefix="/api/core")
+app.include_router(multi_research_router, prefix="/api/multi-research")
 
 
 @app.get("/health")

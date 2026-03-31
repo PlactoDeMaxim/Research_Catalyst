@@ -78,7 +78,7 @@ async def search(
         unique_papers = [p for p in unique_papers if p.open_access]
 
     # ── 6. Rank ──
-    ranked_papers = ranking_service.rank(unique_papers, limit=limit)
+    ranked_papers = ranking_service.rank(unique_papers, query=query, limit=limit)
 
     # ── 7. Build response ──
     response = SearchResponse(

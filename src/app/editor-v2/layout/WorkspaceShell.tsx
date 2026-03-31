@@ -5,7 +5,7 @@ import type { EditorView } from "@codemirror/view";
 import type { Diagnostic } from "@codemirror/lint";
 import styles from "../editor-v2.module.css";
 import PaneResizer from "./PaneResizer";
-import { inferMainFilePath, useProjectStore } from "../state/projectStore";
+import { inferMainFilePath, useProjectStore, type ProjectState } from "../state/projectStore";
 import FileTree from "../filetree/FileTree";
 import EditorTabs from "../tabs/EditorTabs";
 import LatexCodeEditor from "../editor/LatexCodeEditor";
@@ -19,15 +19,39 @@ import BibliographyPanel from "../bibliography/BibliographyPanel";
 import CollabPanels from "../collab/CollabPanels";
 import { compileDiagnosticsToLint } from "../editor/compileDiagnostics";
 import EditorMenuBar from "./EditorMenuBar";
+import WritingAssistantPanel from "../writing/WritingAssistantPanel";
 
 type ViewMode = "editor" | "split" | "preview";
 type CenterMode = "code" | "visual";
 type WorkspaceShellProps = {
     storageKey?: string;
     onExitToProjects?: () => void;
-    onProjectPersist?: (projectName: string) => void;
+    onProjectPersist?: (nextState: ProjectState) => void;
     onCreateProjectRequested?: () => void;
 };
+
+function parseSectionsFromFiles(
+    files: Array<{ path: string; content: string }>
+): Array<{ title: string; content: string }> {
+    const joined = files
+        .filter((item) => item.path.endsWith(".tex"))
+        .map((item) => item.content)
+        .join("\n");
+    const sections: Array<{ title: string; content: string }> = [];
+    const regex = /\\section\{([^}]+)\}([\s\S]*?)(?=\\section\{|$)/g;
+    let match: RegExpExecArray | null = regex.exec(joined);
+    while (match) {
+        sections.push({
+            title: (match[1] || "").trim() || "Section",
+            content: (match[2] || "").trim(),
+        });
+        match = regex.exec(joined);
+    }
+    if (sections.length === 0) {
+        sections.push({ title: "Document", content: joined.slice(0, 5000) });
+    }
+    return sections;
+}
 
 function buildDiagnostics(source: string): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
@@ -54,7 +78,7 @@ export default function WorkspaceShell({
 }: WorkspaceShellProps) {
     const store = useProjectStore({
         storageKey,
-        onPersist: (next) => onProjectPersist?.(next.projectName),
+        onPersist: (next) => onProjectPersist?.(next),
     });
     const [leftWidth, setLeftWidth] = useState(260);
     const [rightWidthPct, setRightWidthPct] = useState(42);
@@ -133,6 +157,20 @@ export default function WorkspaceShell({
         const f = projectFiles.find((x) => x.path === effectiveMainPath && x.kind === "tex");
         return f?.content ?? source;
     }, [projectFiles, effectiveMainPath, source]);
+    const parsedSections = useMemo(
+        () =>
+            parseSectionsFromFiles(
+                projectFiles.map((file) => ({
+                    path: file.path,
+                    content: file.content,
+                }))
+            ),
+        [projectFiles]
+    );
+    const bibliographyText = useMemo(
+        () => projectFiles.filter((file) => file.kind === "bib").map((file) => file.content).join("\n"),
+        [projectFiles]
+    );
 
     return (
         <div className={`${styles.root} ${store.state.theme === "dark" ? styles.rootDark : ""}`}>
@@ -326,6 +364,17 @@ export default function WorkspaceShell({
                             onRestoreVersion={(content) => activeFile && store.updateFileContent(activeFile.id, content)}
                         />
                     )}
+                    <WritingAssistantPanel
+                        currentSectionTitle={activeFile?.name || "Current Section"}
+                        currentText={source}
+                        allSections={parsedSections}
+                        bibContent={bibliographyText}
+                        onApplyText={(nextText) => {
+                            if (!activeFile) return;
+                            store.updateFileContent(activeFile.id, nextText);
+                        }}
+                        onInsertCitation={onInsertCitation}
+                    />
                 </section>
             </div>
 

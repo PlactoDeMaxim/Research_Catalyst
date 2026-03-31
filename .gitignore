@@ -65,3 +65,4 @@ pip-log.txt
 
 # Jupyter
 .ipynb_checkpoints/
+/tmp

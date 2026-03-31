@@ -13,6 +13,7 @@ import uuid
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
+from modules.core.services import object_store
 from modules.plagiarism_check.models.plagiarism_models import (
     JobsListResponse,
     ModuleSettingsResponse,
@@ -69,6 +70,12 @@ async def refresh_job(job_id: str) -> ScanJob:
 
 @router.post("/scan/text", response_model=ScanJob)
 async def scan_text(req: TextScanRequest) -> ScanJob:
+    text_artifact = object_store.save_text(
+        artifact_kind="plagiarism-text",
+        filename=req.filename if "." in req.filename else f"{req.filename}.txt",
+        text=req.text,
+        metadata={"source": "text-scan"},
+    )
     job = plagiarism_store.create_job(
         scan_id=str(uuid.uuid4()),
         input_type="text",
@@ -90,6 +97,7 @@ async def scan_text(req: TextScanRequest) -> ScanJob:
                     message="This MVP checks overlap against retrieved scholarly abstracts, not the full web or closed academic databases.",
                 ).model_dump()
             ],
+            scanned_document={"textArtifact": text_artifact["storage_path"]},
         )
         if not updated:
             raise HTTPException(status_code=500, detail="Failed to persist text scan job")
@@ -122,6 +130,13 @@ async def scan_file(
     if len(content) > MAX_FILE_SIZE_BYTES:
         raise HTTPException(status_code=400, detail="File is too large. Max size is 15 MB.")
 
+    upload_artifact = object_store.save_bytes(
+        artifact_kind="plagiarism-upload",
+        filename=filename,
+        data=content,
+        metadata={"source": "file-scan"},
+    )
+
     job = plagiarism_store.create_job(
         scan_id=str(uuid.uuid4()),
         input_type="file",
@@ -140,7 +155,10 @@ async def scan_file(
             status="completed",
             plagiarism=summary.model_dump(),
             section_findings=[item.model_dump() for item in findings],
-            scanned_document={"extractedTextPreview": _preview_text(text, 500)},
+            scanned_document={
+                "extractedTextPreview": _preview_text(text, 500),
+                "uploadArtifact": upload_artifact["storage_path"],
+            },
             alerts=[
                 ScanAlert(
                     title="MVP corpus notice",

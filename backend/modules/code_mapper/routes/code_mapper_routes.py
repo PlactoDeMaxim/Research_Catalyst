@@ -39,9 +39,17 @@ async def test_llm(req: TestLLMRequest):
     """Quick endpoint to verify the configured LLM provider works."""
     from modules.code_mapper.services import llm_client
 
+    system_instruction = (
+        "You are a helpful research assistant. Please provide a clear and concise answer. "
+        "You must keep your response under 5000 words and ensure you finish your thoughts completely "
+        "so that the response does not get cut off."
+    )
+
     text = await llm_client.chat(
-        [{"role": "user", "content": req.prompt}],
-        max_tokens=256,
+        [
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": req.prompt}
+        ],
         temperature=0.2,
     )
     return {"text": text}

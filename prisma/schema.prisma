@@ -66,3 +66,217 @@ model Citation {
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
+
+model WorkspaceProject {
+  id          String               @id
+  title       String
+  description String               @default("")
+  kind        String               @default("general")
+  status      String               @default("PLANNING")
+  topic       String               @default("")
+  domain      String               @default("general")
+  deadline    String               @default("")
+  ownerId     String               @default("local-user") @map("owner_id")
+  storageKey  String               @default("") @map("storage_key")
+  editorState Json?                @map("editor_state")
+  metadata    Json                 @default("{}")
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+  milestones  WorkspaceMilestone[]
+  citations   WorkspaceCitation[]
+
+  @@map("rc_workspace_projects")
+  @@index([kind])
+}
+
+model WorkspaceMilestone {
+  id          String           @id
+  projectId   String           @map("project_id")
+  title       String
+  description String           @default("")
+  dueDate     String           @default("") @map("due_date")
+  completed   Boolean          @default(false)
+  phase       String           @default("")
+  ordering    Int              @default(0)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  project     WorkspaceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("rc_workspace_milestones")
+  @@index([projectId])
+}
+
+model WorkspaceCitation {
+  id           String           @id
+  projectId    String           @map("project_id")
+  citationText String           @map("citation_text")
+  cslJson      String           @default("") @map("csl_json")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  project      WorkspaceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("rc_workspace_citations")
+  @@index([projectId])
+}
+
+model WorkspaceTask {
+  id         String   @id
+  projectId  String   @map("project_id")
+  taskType   String   @map("task_type")
+  status     String
+  attempt    Int      @default(0)
+  durationMs Int      @default(0) @map("duration_ms")
+  payload    Json     @default("{}")
+  result     Json     @default("{}")
+  errorCode  String?  @map("error_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("rc_workspace_tasks")
+  @@index([projectId])
+}
+
+model WorkspaceDocument {
+  id         String   @id
+  projectId  String   @map("project_id")
+  title      String
+  sourceType String   @default("upload") @map("source_type")
+  mimeType   String   @default("text/plain") @map("mime_type")
+  location   String   @default("")
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("rc_workspace_documents")
+  @@index([projectId])
+}
+
+model WorkspaceEvidenceChunk {
+  id         String   @id
+  projectId  String   @map("project_id")
+  documentId String   @map("document_id")
+  content    String
+  tokens     Int      @default(0)
+  chunkIndex Int      @default(0) @map("chunk_index")
+  metadata   Json     @default("{}")
+  embedding  Float[]
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("rc_workspace_evidence_chunks")
+  @@index([projectId])
+  @@index([documentId])
+}
+
+model WorkspaceClaim {
+  id               String   @id
+  projectId        String   @map("project_id")
+  text             String
+  sourceDocumentId String?  @map("source_document_id")
+  evidenceChunkIds String[] @default([]) @map("evidence_chunk_ids")
+  citationIds      String[] @default([]) @map("citation_ids")
+  confidence       Float    @default(0)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("rc_workspace_claims")
+  @@index([projectId])
+}
+
+model VerificationTask {
+  id         String   @id
+  projectId  String   @map("project_id")
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id")
+  status     String   @default("queued")
+  result     Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("rc_verification_tasks")
+  @@index([projectId])
+}
+
+model PlagiarismJobRecord {
+  id        String   @id
+  scanId    String   @unique @map("scan_id")
+  projectId String?  @map("project_id")
+  status    String
+  inputType String   @map("input_type")
+  filename  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  payload   Json     @default("{}")
+
+  @@map("rc_plagiarism_jobs")
+  @@index([scanId])
+}
+
+model PromptTemplate {
+  id           String   @id
+  taskType     String   @map("task_type")
+  title        String
+  systemPrompt String   @map("system_prompt")
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("rc_prompt_templates")
+}
+
+model ObjectArtifact {
+  id           String   @id
+  projectId    String?  @map("project_id")
+  storagePath  String   @map("storage_path")
+  artifactKind String   @map("artifact_kind")
+  mimeType     String   @default("application/octet-stream") @map("mime_type")
+  sizeBytes    BigInt   @default(0) @map("size_bytes")
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("rc_object_artifacts")
+}
+
+model LiteratureCollection {
+  id          String   @id
+  projectId   String?  @map("project_id")
+  title       String
+  description String   @default("")
+  tags        String[] @default([])
+  papers      Json     @default("[]")
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("rc_literature_collections")
+  @@index([projectId])
+}
+
+model ScreeningSession {
+  id                String   @id
+  projectId         String?  @map("project_id")
+  title             String
+  query             String   @default("")
+  inclusionCriteria String   @default("") @map("inclusion_criteria")
+  exclusionCriteria String   @default("") @map("exclusion_criteria")
+  metadata          Json     @default("{}")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  entries           ScreeningEntry[]
+
+  @@map("rc_screening_sessions")
+  @@index([projectId])
+}
+
+model ScreeningEntry {
+  id        String           @id
+  sessionId String           @map("session_id")
+  paperId   String           @map("paper_id")
+  title     String
+  decision  String           @default("unreviewed")
+  reason    String           @default("")
+  tags      String[]         @default([])
+  paper     Json             @default("{}")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+  session   ScreeningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("rc_screening_entries")
+  @@index([sessionId])
+}

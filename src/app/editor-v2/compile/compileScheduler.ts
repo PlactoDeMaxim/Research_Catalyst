@@ -32,13 +32,17 @@ export function useCompileScheduler({
     const pendingCompileRef = useRef<boolean>(false);
     const mainPathRef = useRef<string>(mainPath);
     const prevMainPathRef = useRef<string | null>(null);
+    /** Keeps latest compile fn for poll timers without re-subscribing the poll effect on every keystroke. */
+    const executeCompileRef = useRef<() => Promise<void>>(async () => {});
+    const statusRef = useRef(status);
+    statusRef.current = status;
 
     useEffect(() => {
         mainPathRef.current = mainPath;
     }, [mainPath]);
 
     const executeCompile = useCallback(async () => {
-        const activeJob = status === "queued" || status === "running";
+        const activeJob = statusRef.current === "queued" || statusRef.current === "running";
         if (requestInFlightRef.current || activeJob) {
             pendingCompileRef.current = true;
             return;
@@ -48,7 +52,8 @@ export function useCompileScheduler({
         try {
             setDiagnostics([]);
             setStatus("queued");
-            setMessage("Queueing compile job...");
+            statusRef.current = "queued";
+            setMessage("Queueing compile job…");
             const created = await compileFromSource(projectName, files, mainPath);
             setJobId(created.job_id);
             setStatus(created.status);
@@ -59,7 +64,11 @@ export function useCompileScheduler({
         } finally {
             requestInFlightRef.current = false;
         }
-    }, [projectName, files, mainPath, status]);
+    }, [projectName, files, mainPath]);
+
+    useEffect(() => {
+        executeCompileRef.current = executeCompile;
+    }, [executeCompile]);
 
     /** Root document changed: cancel in-flight job tracking and queue a fresh compile. */
     useEffect(() => {
@@ -82,9 +91,10 @@ export function useCompileScheduler({
         return () => window.clearTimeout(t);
     }, [mainPath, executeCompile]);
 
+    // Poll only when jobId changes. Do not depend on `status` or `executeCompile`: both change often
+    // (every keystroke updates `files` → new executeCompile), which cancelled the loop and left the UI stuck on "queued".
     useEffect(() => {
         if (!jobId) return;
-        if (status === "succeeded" || status === "failed") return;
         let cancelled = false;
         let timer: ReturnType<typeof setTimeout> | null = null;
         const poll = async () => {
@@ -101,7 +111,7 @@ export function useCompileScheduler({
                     if (pendingCompileRef.current) {
                         pendingCompileRef.current = false;
                         timer = setTimeout(() => {
-                            void executeCompile();
+                            void executeCompileRef.current();
                         }, 0);
                     }
                     return;
@@ -110,7 +120,7 @@ export function useCompileScheduler({
                     if (pendingCompileRef.current) {
                         pendingCompileRef.current = false;
                         timer = setTimeout(() => {
-                            void executeCompile();
+                            void executeCompileRef.current();
                         }, 0);
                     }
                     return;
@@ -120,14 +130,15 @@ export function useCompileScheduler({
                 setMessage(err instanceof Error ? err.message : "Compile status polling failed");
                 return;
             }
-            timer = setTimeout(poll, 2500);
+            // Poll quickly so the UI moves off "queued" as soon as the worker sets "running".
+            timer = setTimeout(poll, 450);
         };
         void poll();
         return () => {
             cancelled = true;
             if (timer) clearTimeout(timer);
         };
-    }, [jobId, status, executeCompile]);
+    }, [jobId]);
 
     useEffect(() => {
         if (!autoCompile) return;

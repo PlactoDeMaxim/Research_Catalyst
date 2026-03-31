@@ -5,6 +5,14 @@ import WorkspaceShell from "./layout/WorkspaceShell";
 import TemplatesModal, { type TemplateItem } from "./templates/TemplatesModal";
 import { STORAGE_KEY, loadFromStorage, saveToStorage } from "./state/storage";
 import type { ProjectState } from "./state/projectStore";
+import {
+    createServerEditorProject,
+    deleteServerEditorProject,
+    getServerEditorProject,
+    listServerEditorProjects,
+    type ServerEditorProject,
+    updateServerEditorProject,
+} from "./state/serverProjects";
 
 type ProjectMeta = {
     id: string;
@@ -15,6 +23,16 @@ type ProjectMeta = {
 };
 
 const PROJECTS_INDEX_KEY = "research-catalyst:editor-v2:projects:index";
+
+function toProjectMeta(project: ServerEditorProject): ProjectMeta {
+    return {
+        id: project.id,
+        name: project.title,
+        storageKey: project.storage_key || createStorageKey(project.id),
+        createdAt: project.created_at ? new Date(project.created_at).getTime() : Date.now(),
+        updatedAt: project.updated_at ? new Date(project.updated_at).getTime() : Date.now(),
+    };
+}
 
 function createId(): string {
     return `p-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
@@ -63,6 +81,7 @@ function buildInitialState(projectName: string, template?: TemplateItem): Projec
 export default function EditorV2Page() {
     const [projects, setProjects] = useState<ProjectMeta[]>([]);
     const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+    const [serverBacked, setServerBacked] = useState(false);
     const [templatesOpen, setTemplatesOpen] = useState(false);
     const [createOpen, setCreateOpen] = useState(false);
     const [createName, setCreateName] = useState("");
@@ -70,28 +89,79 @@ export default function EditorV2Page() {
     const [createTemplate, setCreateTemplate] = useState<TemplateItem | null>(null);
 
     useEffect(() => {
-        const index = loadFromStorage<ProjectMeta[]>([], PROJECTS_INDEX_KEY);
-        // One-time migration of old single-project storage.
-        if (index.length === 0) {
-            const legacy = loadFromStorage<ProjectState | null>(null as ProjectState | null, STORAGE_KEY);
-            if (legacy && legacy.files?.length) {
-                const id = createId();
-                const meta: ProjectMeta = {
-                    id,
-                    name: legacy.projectName || "Migrated Project",
-                    storageKey: createStorageKey(id),
-                    createdAt: Date.now(),
-                    updatedAt: Date.now(),
-                };
-                saveToStorage(legacy, meta.storageKey);
-                saveToStorage([meta], PROJECTS_INDEX_KEY);
-                const t = window.setTimeout(() => setProjects([meta]), 0);
-                return () => window.clearTimeout(t);
+        let cancelled = false;
+
+        const loadProjects = async () => {
+            try {
+                const remote = await listServerEditorProjects();
+                if (cancelled) return;
+                setServerBacked(true);
+                if (remote.length > 0) {
+                    const ordered = remote.map(toProjectMeta).sort((a, b) => b.updatedAt - a.updatedAt);
+                    setProjects(ordered);
+                    saveToStorage(ordered, PROJECTS_INDEX_KEY);
+                    return;
+                }
+
+                const index = loadFromStorage<ProjectMeta[]>([], PROJECTS_INDEX_KEY);
+                const legacy = loadFromStorage<ProjectState | null>(null as ProjectState | null, STORAGE_KEY);
+                const migrated: ProjectMeta[] = [];
+
+                if (legacy && legacy.files?.length) {
+                    const legacyStorageKey = createStorageKey(createId());
+                    const created = await createServerEditorProject({
+                        title: legacy.projectName || "Migrated Project",
+                        storage_key: legacyStorageKey,
+                        state: legacy,
+                    });
+                    saveToStorage(legacy, legacyStorageKey);
+                    migrated.push(toProjectMeta(created));
+                } else {
+                    for (const project of index) {
+                        const state = loadFromStorage<ProjectState | null>(null as ProjectState | null, project.storageKey);
+                        if (!state?.files?.length) continue;
+                        const created = await createServerEditorProject({
+                            title: state.projectName || project.name,
+                            storage_key: project.storageKey,
+                            state,
+                        });
+                        saveToStorage(state, project.storageKey);
+                        migrated.push(toProjectMeta(created));
+                    }
+                }
+
+                if (cancelled) return;
+                const ordered = migrated.sort((a, b) => b.updatedAt - a.updatedAt);
+                setProjects(ordered);
+                saveToStorage(ordered, PROJECTS_INDEX_KEY);
+            } catch {
+                setServerBacked(false);
+                const index = loadFromStorage<ProjectMeta[]>([], PROJECTS_INDEX_KEY);
+                if (index.length === 0) {
+                    const legacy = loadFromStorage<ProjectState | null>(null as ProjectState | null, STORAGE_KEY);
+                    if (legacy && legacy.files?.length) {
+                        const id = createId();
+                        const meta: ProjectMeta = {
+                            id,
+                            name: legacy.projectName || "Migrated Project",
+                            storageKey: createStorageKey(id),
+                            createdAt: Date.now(),
+                            updatedAt: Date.now(),
+                        };
+                        saveToStorage(legacy, meta.storageKey);
+                        saveToStorage([meta], PROJECTS_INDEX_KEY);
+                        setProjects([meta]);
+                        return;
+                    }
+                }
+                setProjects(index.sort((a, b) => b.updatedAt - a.updatedAt));
             }
-        }
-        const ordered = index.sort((a, b) => b.updatedAt - a.updatedAt);
-        const t = window.setTimeout(() => setProjects(ordered), 0);
-        return () => window.clearTimeout(t);
+        };
+
+        void loadProjects();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const persistProjects = useCallback((next: ProjectMeta[]) => {
@@ -101,27 +171,41 @@ export default function EditorV2Page() {
     }, []);
 
     const createProject = useCallback(
-        (name: string, template?: TemplateItem) => {
+        async (name: string, template?: TemplateItem) => {
             const projectName = name.trim();
             if (!projectName) return;
+            const state = buildInitialState(projectName, template);
             const id = createId();
-            const meta: ProjectMeta = {
+            const storageKey = createStorageKey(id);
+            let meta: ProjectMeta = {
                 id,
                 name: projectName,
-                storageKey: createStorageKey(id),
+                storageKey,
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
             };
-            saveToStorage(buildInitialState(projectName, template), meta.storageKey);
+            if (serverBacked) {
+                try {
+                    const created = await createServerEditorProject({
+                        title: projectName,
+                        storage_key: storageKey,
+                        state,
+                    });
+                    meta = toProjectMeta(created);
+                } catch {
+                    // Fall back to local-only if server sync is unavailable.
+                }
+            }
+            saveToStorage(state, meta.storageKey);
             persistProjects([meta, ...projects]);
-            setActiveProjectId(id);
+            setActiveProjectId(meta.id);
             setCreateName("");
             setCreateError("");
             setCreateOpen(false);
             setCreateTemplate(null);
             setTemplatesOpen(false);
         },
-        [persistProjects, projects]
+        [persistProjects, projects, serverBacked]
     );
 
     const openCreateModal = useCallback((template?: TemplateItem) => {
@@ -137,14 +221,21 @@ export default function EditorV2Page() {
             setCreateError("Project name is required.");
             return;
         }
-        createProject(trimmed, createTemplate ?? undefined);
+        void createProject(trimmed, createTemplate ?? undefined);
     }, [createName, createProject, createTemplate]);
 
     const deleteProject = useCallback(
-        (projectId: string) => {
+        async (projectId: string) => {
             const project = projects.find((p) => p.id === projectId);
             if (!project) return;
             if (typeof window !== "undefined" && !window.confirm(`Delete "${project.name}"?`)) return;
+            if (serverBacked) {
+                try {
+                    await deleteServerEditorProject(projectId);
+                } catch {
+                    // local deletion still proceeds so the UI does not get stuck
+                }
+            }
             const next = projects.filter((p) => p.id !== projectId);
             persistProjects(next);
             if (typeof window !== "undefined") {
@@ -156,7 +247,24 @@ export default function EditorV2Page() {
             }
             if (activeProjectId === projectId) setActiveProjectId(null);
         },
-        [activeProjectId, persistProjects, projects]
+        [activeProjectId, persistProjects, projects, serverBacked]
+    );
+
+    const openProject = useCallback(
+        async (project: ProjectMeta) => {
+            if (serverBacked) {
+                try {
+                    const remote = await getServerEditorProject(project.id);
+                    if (remote?.editor_state) {
+                        saveToStorage(remote.editor_state, project.storageKey);
+                    }
+                } catch {
+                    // Local cache remains the fallback.
+                }
+            }
+            setActiveProjectId(project.id);
+        },
+        [serverBacked]
     );
 
     const activeProject = useMemo(
@@ -170,11 +278,19 @@ export default function EditorV2Page() {
                 key={activeProject.id}
                 storageKey={activeProject.storageKey}
                 onExitToProjects={() => setActiveProjectId(null)}
-                onProjectPersist={(projectName) => {
+                onProjectPersist={(nextState) => {
+                    saveToStorage(nextState, activeProject.storageKey);
+                    if (serverBacked) {
+                        void updateServerEditorProject(activeProject.id, {
+                            title: nextState.projectName,
+                            storage_key: activeProject.storageKey,
+                            state: nextState,
+                        });
+                    }
                     persistProjects(
                         projects.map((p) =>
                             p.id === activeProject.id
-                                ? { ...p, name: projectName || p.name, updatedAt: Date.now() }
+                                ? { ...p, name: nextState.projectName || p.name, updatedAt: Date.now() }
                                 : p
                         )
                     );
@@ -230,13 +346,13 @@ export default function EditorV2Page() {
                             </div>
                             <div style={{ display: "flex", gap: "0.4rem" }}>
                                 <button
-                                    onClick={() => setActiveProjectId(project.id)}
+                                    onClick={() => void openProject(project)}
                                     style={{ border: "1px solid #0ea5e9", color: "#075985", background: "#e0f2fe", borderRadius: "6px", padding: "0.28rem 0.5rem", fontSize: "0.76rem", fontWeight: 600 }}
                                 >
                                     Open
                                 </button>
                                 <button
-                                    onClick={() => deleteProject(project.id)}
+                                    onClick={() => void deleteProject(project.id)}
                                     style={{ border: "1px solid #fecaca", color: "#b91c1c", background: "#fff1f2", borderRadius: "6px", padding: "0.28rem 0.5rem", fontSize: "0.76rem" }}
                                 >
                                     Delete

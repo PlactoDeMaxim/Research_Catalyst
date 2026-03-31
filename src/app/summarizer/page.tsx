@@ -7,8 +7,11 @@ import styles from "./page.module.css";
 import {
     getSummaryCategories,
     getSummaryPapers,
+    getUploadedPapers,
     type SummaryPaperCard,
+    type SummaryPaperDetail,
 } from "./_components/summaryApi";
+import UploadModal from "./_components/UploadModal";
 
 const PAGE_SIZE = 6;
 
@@ -76,10 +79,15 @@ export default function SummaryPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [uploadedPapers, setUploadedPapers] = useState<SummaryPaperDetail[]>([]);
+
     useEffect(() => {
         if (didLoadSavedRef.current) return;
         didLoadSavedRef.current = true;
         setSavedSlugs(getSavedSlugs());
+        // Load uploaded papers
+        getUploadedPapers().then(setUploadedPapers).catch(() => {});
     }, []);
 
     const toggleSaved = useCallback((slug: string) => {
@@ -267,11 +275,27 @@ export default function SummaryPage() {
                     <button className="btn btn-primary" onClick={scrollToLatest} type="button">
                         Explore Papers
                     </button>
-                    <button className="btn btn-secondary" type="button" disabled style={{ opacity: 0.6 }}>
+                    <button
+                        className="btn btn-secondary"
+                        type="button"
+                        onClick={() => setUploadModalOpen(true)}
+                    >
                         Upload a Paper
                     </button>
                 </div>
             </section>
+
+            {/* ── Upload Modal ── */}
+            <UploadModal
+                open={uploadModalOpen}
+                onClose={() => setUploadModalOpen(false)}
+                onSuccess={(paper) => {
+                    setUploadModalOpen(false);
+                    // Update the uploaded papers list
+                    setUploadedPapers((prev) => [paper as SummaryPaperDetail, ...prev]);
+                    router.push(`/summarizer/${paper.slug}`);
+                }}
+            />
 
             {/* ── Search ── */}
             <section className={styles.searchSection}>
@@ -321,6 +345,72 @@ export default function SummaryPage() {
                 <div className={`empty-state`} style={{ marginTop: "var(--space-xl)" }}>
                     <h3 style={{ color: "var(--text-secondary)" }}>⚠️ {error}</h3>
                 </div>
+            )}
+
+            {/* ── Your Uploaded Papers ── */}
+            {uploadedPapers.length > 0 && (
+                <section className={styles.section}>
+                    <div className={styles.sectionHead}>
+                        <div>
+                            <h2>Your Uploaded Papers</h2>
+                            <p>AI-generated summaries from your uploaded PDFs</p>
+                        </div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>
+                            {uploadedPapers.length} paper{uploadedPapers.length !== 1 ? "s" : ""}
+                        </div>
+                    </div>
+
+                    <div className={styles.grid}>
+                        {uploadedPapers.map((paper) => {
+                            const accent = "#6f42c1";
+                            return (
+                                <Link
+                                    key={paper.slug}
+                                    href={`/summarizer/${paper.slug}`}
+                                    className="card"
+                                    style={{
+                                        padding: "var(--space-lg)",
+                                        borderRadius: "var(--radius-xl)",
+                                        borderTop: `4px solid ${accent}`,
+                                        boxShadow: "var(--shadow-xs)",
+                                        textDecoration: "none",
+                                        display: "block",
+                                    }}
+                                >
+                                    <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--space-sm)" }}>
+                                        <span
+                                            className={styles.catPill}
+                                            style={{
+                                                borderColor: `${accent}55`,
+                                                background: `${accent}12`,
+                                                color: accent,
+                                            }}
+                                        >
+                                            📄 {paper.category || "Uploaded"}
+                                        </span>
+                                        <span style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>AI Generated</span>
+                                    </div>
+
+                                    <h3 className={styles.paperTitle} style={{ marginTop: "var(--space-sm)" }}>
+                                        {paper.title}
+                                    </h3>
+                                    <div className={styles.paperAuthors}>
+                                        {paper.authors?.length
+                                            ? safeTrimAuthors(paper.authors)
+                                            : "Uploaded paper"}
+                                    </div>
+                                    <div className={styles.paperPreview}>
+                                        {paper.executive_summary?.slice(0, 200) || "AI-generated summary"}
+                                    </div>
+                                    <div className={styles.paperMeta}>
+                                        <span>{paper.time_ago || "just now"}</span>
+                                        <span>{paper.read_time_minutes || 1} min read</span>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </section>
             )}
 
             {/* ── Latest Research ── */}

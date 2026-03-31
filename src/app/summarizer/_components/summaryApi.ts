@@ -72,3 +72,26 @@ export async function getSummaryPaperBySlug(slug: string): Promise<SummaryPaperD
     return (await resp.json()) as SummaryPaperDetail;
 }
 
+export async function uploadPaperPdf(file: File): Promise<SummaryPaperDetail> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const resp = await fetch(`${SUMMARY_API_BASE}/upload`, {
+        method: "POST",
+        body: formData,
+    });
+
+    if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({ detail: `Upload failed: ${resp.status}` }));
+        throw new Error(errData.detail || `Upload failed: ${resp.status}`);
+    }
+
+    return (await resp.json()) as SummaryPaperDetail;
+}
+
+export async function getUploadedPapers(): Promise<SummaryPaperDetail[]> {
+    const resp = await fetch(`${SUMMARY_API_BASE}/uploaded`);
+    if (!resp.ok) throw new Error(`Failed to fetch uploaded papers: ${resp.status}`);
+    return (await resp.json()) as SummaryPaperDetail[];
+}
+

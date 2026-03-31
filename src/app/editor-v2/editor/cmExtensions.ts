@@ -20,25 +20,29 @@ export const fontSizeCompartment = new Compartment();
 
 const latexLanguage = StreamLanguage.define(stex);
 
+/**
+ * `getDiagnostics` / `getOnRecompile` are read on demand so their identities can change
+ * without recreating this extension array — rebuilding extensions on every keystroke (lint)
+ * caused janky scrolling and dropped edits in the CodeMirror shell.
+ */
 export function buildBaseExtensions(
     wordWrap: boolean,
     fontSizePx: number,
-    diagnostics: Diagnostic[],
-    onRecompile?: () => void
+    getDiagnostics: () => readonly Diagnostic[],
+    getOnRecompile?: () => (() => void) | undefined
 ) {
-    const recompileKeymap =
-        onRecompile &&
-        Prec.highest(
-            keymap.of([
-                {
-                    key: "Mod-Enter",
-                    run: () => {
-                        onRecompile();
-                        return true;
-                    },
+    const recompileKeymap = Prec.highest(
+        keymap.of([
+            {
+                key: "Mod-Enter",
+                run: () => {
+                    const cb = getOnRecompile?.();
+                    cb?.();
+                    return true;
                 },
-            ])
-        );
+            },
+        ])
+    );
 
     return [
         lineNumbers(),
@@ -53,7 +57,7 @@ export function buildBaseExtensions(
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         EditorState.tabSize.of(4),
         placeholder("Start writing your LaTeX..."),
-        ...(recompileKeymap ? [recompileKeymap] : []),
+        recompileKeymap,
         keymap.of([
             indentWithTab,
             ...defaultKeymap,
@@ -77,13 +81,14 @@ export function buildBaseExtensions(
             ".cm-scroller": {
                 height: "100%",
                 minHeight: 0,
-                overflowY: "scroll",
+                overflowY: "auto",
                 overflowX: "auto",
                 overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
             },
             ".cm-gutters": { height: "100%", minHeight: 0 },
         }),
-        linter(() => diagnostics),
+        linter((_view) => Array.from(getDiagnostics())),
         EditorState.allowMultipleSelections.of(true),
         EditorState.readOnly.of(false),
         EditorView.contentAttributes.of({ spellcheck: "false" }),

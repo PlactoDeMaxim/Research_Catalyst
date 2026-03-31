@@ -6,7 +6,7 @@ export function getPaperEditorApiBase(): string {
     if (typeof process !== "undefined" && process.env.NEXT_PUBLIC_PAPER_EDITOR_API_BASE) {
         return process.env.NEXT_PUBLIC_PAPER_EDITOR_API_BASE.replace(/\/$/, "");
     }
-    return "http://localhost:8000/api/paper-editor";
+    return "/api/paper-editor-proxy";
 }
 
 /** Evaluated once per bundle for modules that need a stable string at import time. */

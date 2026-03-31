@@ -40,6 +40,7 @@ export type ProjectState = {
 
 const MAIN_SAMPLE = `\\documentclass[conference]{IEEEtran}
 \\usepackage{amsmath,graphicx,cite}
+% IEEEtran: keep \\title{...} and \\author{...} compact (no blank lines inside braces) or you may get markboth/title errors.
 \\title{My Research Paper}
 \\author{Author Name}
 \\begin{document}

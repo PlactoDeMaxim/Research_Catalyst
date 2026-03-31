@@ -29,6 +29,9 @@ _CATEGORIES: list[str] = []
 _POPULAR_SLUGS: list[str] = []
 _INITIALIZED = False
 
+# ── Uploaded papers (in-memory, process-local) ──
+_UPLOADED_PAPERS: dict[str, dict[str, Any]] = {}  # slug -> paper detail dict
+
 
 def _workspace_root() -> Path:
     # research-catalyst/backend/modules/summary/services/paper_service.py
@@ -421,8 +424,14 @@ def get_paper_detail(slug: str) -> Optional[dict[str, Any]]:
     if not slug:
         return None
 
-    # Slug might be URL-encoded; normalizing to lowercase for map lookup.
     slug_norm = slug.strip().lower()
+
+    # Check uploaded papers first
+    uploaded = _UPLOADED_PAPERS.get(slug_norm)
+    if uploaded:
+        return uploaded
+
+    # Then check scraped papers
     rec = _SLUG_TO_RECORD.get(slug_norm)
     if not rec:
         return None
@@ -442,4 +451,20 @@ def get_paper_detail(slug: str) -> Optional[dict[str, Any]]:
         "arxiv_number": rec.arxiv_number,
         "original_paper_link": rec.original_paper_link,
     }
+
+
+def register_uploaded_paper(paper: dict[str, Any]) -> None:
+    """Store an uploaded paper summary in the in-memory registry."""
+    slug = paper.get("slug", "").strip().lower()
+    if not slug:
+        raise ValueError("Paper must have a slug")
+    _UPLOADED_PAPERS[slug] = paper
+
+
+def list_uploaded_papers() -> list[dict[str, Any]]:
+    """Return all uploaded paper summaries, newest first."""
+    papers = list(_UPLOADED_PAPERS.values())
+    # Reverse so newest uploads appear first
+    papers.reverse()
+    return papers
 

@@ -8,7 +8,7 @@ import styles from "./Sidebar.module.css";
 const STORAGE_KEY = "rc-sidebar-collapsed";
 
 const navItems = [
-    { href: "/", label: "Dashboard", icon: "📊" },
+    { href: "/", label: "Home", icon: "🏠" },
     { href: "/discovery", label: "Discovery", icon: "🔍" },
     { href: "/editor-v2", label: "Paper Editor", icon: "📝" },
     { href: "/visualize", label: "Visualize", icon: "📈" },
@@ -27,17 +27,18 @@ function applySidebarWidth(collapsed: boolean) {
 
 export default function Sidebar() {
     const pathname = usePathname();
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(() => {
+        if (typeof window === "undefined") return false;
+        try {
+            return localStorage.getItem(STORAGE_KEY) === "1";
+        } catch {
+            return false;
+        }
+    });
 
     useLayoutEffect(() => {
-        try {
-            const stored = localStorage.getItem(STORAGE_KEY) === "1";
-            setCollapsed(stored);
-            applySidebarWidth(stored);
-        } catch {
-            applySidebarWidth(false);
-        }
-    }, []);
+        applySidebarWidth(collapsed);
+    }, [collapsed]);
 
     const toggle = useCallback(() => {
         setCollapsed((prev) => {

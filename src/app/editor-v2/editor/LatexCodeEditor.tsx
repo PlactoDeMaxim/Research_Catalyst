@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import CodeMirror, { type ViewUpdate } from "@uiw/react-codemirror";
 import type { Diagnostic } from "@codemirror/lint";
+import { forceLinting } from "@codemirror/lint";
 import { EditorSelection } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { buildBaseExtensions } from "./cmExtensions";
@@ -30,10 +31,26 @@ export default function LatexCodeEditor({
 }: LatexCodeEditorProps) {
     const viewRef = useRef<EditorView | null>(null);
     const lastJumpRef = useRef<number | null>(null);
+    const diagnosticsRef = useRef<Diagnostic[]>(diagnostics);
+    const onRecompileRef = useRef(onRecompile);
+    diagnosticsRef.current = diagnostics;
+    onRecompileRef.current = onRecompile;
+
     const extensions = useMemo(
-        () => buildBaseExtensions(wordWrap, fontSize, diagnostics, onRecompile),
-        [wordWrap, fontSize, diagnostics, onRecompile]
+        () =>
+            buildBaseExtensions(
+                wordWrap,
+                fontSize,
+                () => diagnosticsRef.current,
+                () => onRecompileRef.current
+            ),
+        [wordWrap, fontSize]
     );
+
+    useEffect(() => {
+        const v = viewRef.current;
+        if (v) forceLinting(v);
+    }, [diagnostics]);
 
     useEffect(() => {
         if (!jumpToLine || jumpToLine < 1) return;
@@ -82,4 +99,3 @@ export default function LatexCodeEditor({
         />
     );
 }
-

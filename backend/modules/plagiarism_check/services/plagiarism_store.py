@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from modules.core.services import postgres_store
 from modules.plagiarism_check.models.plagiarism_models import ScanJob
 
 
@@ -55,6 +56,26 @@ def create_job(
     text_preview: str | None,
     sandbox: bool,
 ) -> ScanJob:
+    if postgres_store.database_enabled():
+        now = _utc_now()
+        job = ScanJob(
+            id=str(uuid.uuid4()),
+            scan_id=scan_id,
+            status="submitting",
+            input_type=input_type,
+            filename=filename,
+            created_at=now,
+            updated_at=now,
+            sandbox=sandbox,
+            text_preview=text_preview,
+        )
+        row = postgres_store.create_plagiarism_job(
+            scan_id=scan_id,
+            input_type=input_type,
+            filename=filename,
+            payload=job.model_dump(),
+        )
+        return ScanJob.model_validate(row)
     with _LOCK:
         now = _utc_now()
         job = ScanJob(
@@ -75,6 +96,8 @@ def create_job(
 
 
 def list_jobs() -> list[ScanJob]:
+    if postgres_store.database_enabled():
+        return [ScanJob.model_validate(item) for item in postgres_store.list_plagiarism_jobs()]
     with _LOCK:
         data = _load_all()
         jobs = [ScanJob.model_validate(item) for item in data.values()]
@@ -82,6 +105,9 @@ def list_jobs() -> list[ScanJob]:
 
 
 def get_job(job_id: str) -> ScanJob | None:
+    if postgres_store.database_enabled():
+        item = postgres_store.get_plagiarism_job(job_id)
+        return ScanJob.model_validate(item) if item else None
     with _LOCK:
         data = _load_all()
         item = data.get(job_id)
@@ -91,6 +117,9 @@ def get_job(job_id: str) -> ScanJob | None:
 
 
 def get_job_by_scan_id(scan_id: str) -> ScanJob | None:
+    if postgres_store.database_enabled():
+        item = postgres_store.get_plagiarism_job_by_scan_id(scan_id)
+        return ScanJob.model_validate(item) if item else None
     with _LOCK:
         data = _load_all()
         for item in data.values():
@@ -100,6 +129,9 @@ def get_job_by_scan_id(scan_id: str) -> ScanJob | None:
 
 
 def update_job(job_id: str, **updates: Any) -> ScanJob | None:
+    if postgres_store.database_enabled():
+        item = postgres_store.update_plagiarism_job(job_id, **updates)
+        return ScanJob.model_validate(item) if item else None
     with _LOCK:
         data = _load_all()
         item = data.get(job_id)
@@ -113,6 +145,12 @@ def update_job(job_id: str, **updates: Any) -> ScanJob | None:
 
 
 def update_job_by_scan_id(scan_id: str, **updates: Any) -> ScanJob | None:
+    if postgres_store.database_enabled():
+        existing = get_job_by_scan_id(scan_id)
+        if not existing:
+            return None
+        item = postgres_store.update_plagiarism_job(existing.id, **updates)
+        return ScanJob.model_validate(item) if item else None
     with _LOCK:
         data = _load_all()
         target_id = None

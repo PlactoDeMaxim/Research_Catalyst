@@ -28,6 +28,7 @@ export default function PdfPreviewPane({
     const latestLog = logs[logs.length - 1] ?? "";
     const [logOpen, setLogOpen] = useState(true);
     const pdfHref = jobId && status === "succeeded" ? getDownloadPdfUrl(jobId) : "";
+    const [iframeError, setIframeError] = useState<string | null>(null);
 
     return (
         <div className={styles.previewRoot}>
@@ -45,13 +46,22 @@ export default function PdfPreviewPane({
                 </div>
             </div>
             <div className={styles.previewCanvas}>
-                {inlineUrl ? (
-                    <iframe title="Compiled PDF" src={inlineUrl} className={styles.previewFrame} />
+                {inlineUrl && !iframeError ? (
+                    <iframe
+                        title="Compiled PDF"
+                        src={inlineUrl}
+                        className={styles.previewFrame}
+                        onError={() => setIframeError("Unable to embed preview frame. Use Download PDF instead.")}
+                    />
                 ) : (
                     <div className={styles.previewEmpty}>
                         <div className={styles.previewEmptyTitle}>No compiled PDF yet</div>
                         <div>
-                            {status !== "idle" ? `${phase}: ${message}` : "Type in the editor and auto-compile will produce preview."}
+                            {iframeError
+                                ? iframeError
+                                : status !== "idle"
+                                  ? `${phase}: ${message}`
+                                  : "Type in the editor and auto-compile will produce preview."}
                         </div>
                     </div>
                 )}
